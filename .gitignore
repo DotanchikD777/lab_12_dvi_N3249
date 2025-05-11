@@ -1,52 +1,61 @@
-# Prerequisites
-*.d
+# Папки сборки CMake (по умолчанию cmake-build-debug, cmake-build-release и т.д.)
+*/cmake-build-*/
+build/
+out/
 
-# Object files
+# Файлы CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Артефакты компиляции
 *.o
-*.ko
 *.obj
-*.elf
-
-# Linker output
-*.ilk
-*.map
-*.exp
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
 *.so
-*.so.*
 *.dylib
-
-# Executables
+*.dll
 *.exe
 *.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+*.a
+*.lib
 
-# Debug files
-*.dSYM/
-*.su
-*.idb
-*.pdb
+# Файлы автогенерируемые при сборке
+*.gcno
+*.gcda
+*.gcov
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# Логи и профили
+*.log
+*.prof
+*.gprof
+
+# Конфиги IDE CLion и других
+.idea/
+*.iml
+*.iws
+
+# Конфиги VSCode
+.vscode/
+
+# Временные/резервные файлы редакторов
+*~
+*.swp
+*.swo
+*.tmp
+
+# Файлы CTest
+Testing/
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Бинарники пользователя и прочее
+*.user
+*.user.*
+*.pch
+
