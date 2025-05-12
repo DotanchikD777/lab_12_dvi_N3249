@@ -9,12 +9,12 @@
 #include <stdbool.h>
 
 //defines
-#define A_USED 2-2
-#define O_USED 3-2
-#define N_USED 4-2
-#define P_USED 5-2
-#define H_USED 6-2
-#define V_USED 7-2
+#define A_USED 0
+#define O_USED 1
+#define N_USED 2
+#define P_USED 3
+#define H_USED 4
+#define V_USED 5
 
 //Globals
 
