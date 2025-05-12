@@ -21,9 +21,9 @@ int main(int argc, char *argv[]){
     char *P_dir = NULL;
     
 
-    bool environment_debug_var = (getenv("LAB1DEBUG") != NULL);
+    bool DEBUG = (getenv("LAB1DEBUG") != NULL);
 
-    get_debug_status_mode_error_handlers_functions(environment_debug_var);
+    get_debug_status_mode_error_handlers_functions(DEBUG);
 
     const char *optstring = "P:AONvh";
 
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]){
                 exit(EXIT_FAILURE);
         }
         
-        if (environment_debug_var){
+        if (DEBUG){
             printf("Debug: opt='%c', A=%d, O=%d, N=%d, P=%s\n",
                     (char)opt, A_flag, O_flag, N_flag, 
                     P_dir ? P_dir : "(none)" );
@@ -85,7 +85,7 @@ int main(int argc, char *argv[]){
 
     if(!opt_used_counter[O_USED] && !opt_used_counter[A_USED]){
         A_flag = true;
-        if(environment_debug_var){
+        if(DEBUG){
             printf("\nDebug: default case --> A=%d", A_flag);
         }
     }

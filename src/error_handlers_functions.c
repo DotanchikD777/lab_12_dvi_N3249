@@ -3,12 +3,12 @@
 
 
 
-static bool debug_mode;
+static bool DEBUG;
 int opt_used_counter[6];
 
 void get_debug_status_mode_error_handlers_functions(bool flag){
     if(flag){
-        debug_mode = true;
+        DEBUG = true;
     }
 }
 
@@ -25,7 +25,7 @@ void opt_errors(){
         printf("\nError: A option and O option usage\n");
     }
 
-    if(debug_mode){
+    if(DEBUG){
         printf("\nDebug: Options passed without errors\n");
     }
 }
