@@ -1,37 +1,32 @@
-# Makefile для проекта C
-# Собирает все .c из src/ в object/, а итоговый lab12dvi кладёт в корень (рядом с Makefile)
+# Указываем компилятор и базовые флаги
+CC = gcc
+CFLAGS = -Wall -Wextra -O2 -std=gnu2x -D_POSIX_C_SOURCE=200809L
 
-# Компилятор и флаги
-CC      := gcc
-CFLAGS  := -std=c11 -Wall -Wextra -O2
+# Определяем директории
+SRCDIR = src
+OBJDIR = obj
 
-# Директории
-SRC_DIR := src
-OBJ_DIR := obj
+# Находим все исходники в папке src
+SOURCES := $(wildcard $(SRCDIR)/*.c)
 
-# Исходники и объектники
-SRCS    := $(wildcard $(SRC_DIR)/*.c)
-OBJS    := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
+# Соответствующие объектные файлы
+OBJECTS := $(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SOURCES))
 
-# Имя исполняемого файла (в корне проекта)
-TARGET  := lab12dviN3249
+# Имя результирующего исполняемого файла
+TARGET = lab11dviN3249
 
-.PHONY: all clean dirs
+all: $(TARGET)
 
-all: dirs $(TARGET)
+$(TARGET): $(OBJECTS)
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJECTS)
 
-# Создать папку object/, если её нет
-dirs:
-	mkdir -p $(OBJ_DIR)
+$(OBJDIR):
+	mkdir -p $(OBJDIR)
 
-# Линковка
-$(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $^
-
-# Компиляция каждого .c в свой .o
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
+$(OBJDIR)/%.o: $(SRCDIR)/%.c | $(OBJDIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Удалить объектники и исполняемый
 clean:
-	rm -rf $(OBJ_DIR)/*.o $(TARGET)
+	rm -rf $(OBJDIR) $(TARGET)
+
+.PHONY: all clean

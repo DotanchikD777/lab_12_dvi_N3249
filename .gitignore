@@ -1,61 +1,48 @@
-# Папки сборки CMake (по умолчанию cmake-build-debug, cmake-build-release и т.д.)
-*/cmake-build-*/
-build/
-out/
+# Файлы сборки CMake
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/CTestTestfile.cmake
+#/Makefile
 
-# Файлы CMake
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-Makefile
-
-# Артефакты компиляции
-*.o
-*.obj
-*.so
-*.dylib
-*.dll
+# Бинарные файлы и объектные файлы
 *.exe
 *.out
+*.o
+*.obj
 *.a
-*.lib
+*.so
+*.dll
 
-# Файлы автогенерируемые при сборке
+# Временные файлы редакторов
+*.swp
+*.swo
+*~
+
+# Системные файлы macOS
+.DS_Store
+
+# Файлы IDE и редакторов
+.idea/
+.vscode/
+
+# Тестовые артефакты
 *.gcno
 *.gcda
 *.gcov
+*.profraw
+*.profdata
 
-# Логи и профили
-*.log
-*.prof
-*.gprof
+# CLion / JetBrains IDEs кэш
+cmake-build-*/
 
-# Конфиги IDE CLion и других
-.idea/
-*.iml
-*.iws
+# архивы
 
-# Конфиги VSCode
-.vscode/
-
-# Временные/резервные файлы редакторов
-*~
-*.swp
-*.swo
-*.tmp
-
-# Файлы CTest
-Testing/
-
-# MacOS
-.DS_Store
-
-# Windows
-Thumbs.db
-desktop.ini
-
-# Бинарники пользователя и прочее
-*.user
-*.user.*
-*.pch
-
+# Архивы
+*.zip
+*.tar
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.7z
+*.rar
