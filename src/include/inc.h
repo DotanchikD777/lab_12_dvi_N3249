@@ -7,8 +7,10 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <unistd.h>   // для sleep()
+#include <unistd.h>   // sleep()
 #include <string.h>
+#include <dlfcn.h>
+#include <ftw.h> // ftw()
 
 //defines
 #define A_USED 0

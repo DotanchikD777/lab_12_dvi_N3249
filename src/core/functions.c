@@ -2,7 +2,7 @@
 // Created by denis on 15.05.2025.
 //
 
-#include "inc.h"
+#include "../include/inc.h"
 
 void print_standart_message(char flag){
     switch (flag) {

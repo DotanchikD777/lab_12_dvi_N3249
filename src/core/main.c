@@ -1,4 +1,5 @@
-#include "inc.h"
+#include "../include/inc.h"
+#include "../include/plugin_api.h"
 
 
 
@@ -16,7 +17,7 @@ int main(int argc, char *argv[]){
     bool A_flag = false;
     bool O_flag = false;
     bool N_flag = false;
-    char *P_dir = NULL;
+    char *P_dir = ".";
     
 
     bool DEBUG = (getenv("LAB1DEBUG") != NULL);
