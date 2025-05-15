@@ -22,10 +22,41 @@ void opt_errors(){
     }
 
     if(opt_used_counter[A_USED] && opt_used_counter[O_USED]){
-        printf("\nError: A option and O option usage\n");
+        punish_dummy_user("A and O option usage");
     }
 
     if(DEBUG){
         printf("\nDebug: Options passed without errors\n");
     }
+}
+
+void punish_dummy_user(const char *err_msg){
+    const char *taunts[] = {
+            "Oh, brilliant. Did you really think that would work?",
+            "Thanks for demonstrating what \033[1;31mNOT\033[0m to do.",
+            "Maybe try reading a manual next time."
+    };
+    size_t n = sizeof(taunts) / sizeof(taunts[0]);
+
+    // Покрасим текст в красный (\033[1;31m … \033[0m)
+    fprintf(stderr, "\033[1;31mError: %s\033[0m\n", err_msg);
+
+    for (size_t i = 0; i < n; i++) {
+        printf("\a");                // звуковой сигнал
+        fprintf(stderr, "%s\n", taunts[i]);
+        sleep(3);                    // пауза 1 секунда
+    }
+
+    // Финальное сообщение и выход
+    fprintf(stderr, "\033[1;31mTURN OFF THE PC!\033[0m It will be better for everyone.\n");
+    exit(EXIT_FAILURE);
+
+}
+
+void print_error_message(const char *err_msg){
+
+    fprintf(stderr, "Error: %s", err_msg);
+
+    exit(EXIT_FAILURE);
+
 }

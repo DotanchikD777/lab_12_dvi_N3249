@@ -7,6 +7,8 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <unistd.h>   // для sleep()
+#include <string.h>
 
 //defines
 #define A_USED 0
@@ -15,6 +17,13 @@
 #define P_USED 3
 #define H_USED 4
 #define V_USED 5
+
+#define STRIPE "<==========================================================================================>"
+#define NAME "Denis Ilchuk Vitalevich"
+#define VR "13"
+#define GR "N3249"
+#define NAME "lab11dviN3249"
+#define VERSION "0.5"
 
 //Globals
 
@@ -28,6 +37,11 @@ void opt_errors();
 
 void get_debug_status_mode_error_handlers_functions(bool flag);
 
+void print_standart_message(char flag);
+
+void punish_dummy_user(const char *err_msg);
+
+void print_error_message(const char *err_msg);
 
 
 #endif

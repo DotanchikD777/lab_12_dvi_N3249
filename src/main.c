@@ -16,8 +16,6 @@ int main(int argc, char *argv[]){
     bool A_flag = false;
     bool O_flag = false;
     bool N_flag = false;
-    bool v_flag = false;
-    bool h_flag = false;
     char *P_dir = NULL;
     
 
@@ -58,22 +56,19 @@ int main(int argc, char *argv[]){
                 opt_used_counter[P_USED] += 1;
                 break;
             case 'h':
-                // print --help message
-                printf("\nhelp\n");
+                print_standart_message('h');
                 opt_used_counter[H_USED] += 1;
                 break;
             case 'v':
-                // print --version message
-                printf("\nhelp\n");
+                print_standart_message('v');
                 opt_used_counter[V_USED] += 1;
                 break;
             case '?':
-                printf("\nError: corrupted options\n");
-                exit(EXIT_FAILURE);
+                print_error_message("corrupted options");
                 break;
             default:
-                printf("\nError: Impossible error\n");
-                exit(EXIT_FAILURE);
+                print_error_message("impossible error");
+                break;
         }
         
         if (DEBUG){
@@ -91,6 +86,7 @@ int main(int argc, char *argv[]){
     }
 
     opt_errors();
+
 
 
 
