@@ -11,6 +11,7 @@
 #include <string.h>
 #include <dlfcn.h>
 #include <ftw.h> // ftw()
+#include <string.h>
 
 //defines
 #define A_USED 0
@@ -24,7 +25,7 @@
 #define NAME "Denis Ilchuk Vitalevich"
 #define VR "13"
 #define GR "N3249"
-#define NAME "lab11dviN3249"
+#define PROGNAME "lab11dviN3249"
 #define VERSION "0.5"
 
 //Globals

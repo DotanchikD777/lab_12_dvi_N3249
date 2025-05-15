@@ -5,7 +5,9 @@
 #ifndef _PLUGIN_API_H
 #define _PLUGIN_API_H
 
+
 #include <getopt.h>
+#include <stddef.h>
 
 /*
     Структура, описывающая опцию, поддерживаемую плагином.
