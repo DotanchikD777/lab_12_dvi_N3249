@@ -22,8 +22,8 @@ int main(int argc, char *argv[]){
     bool DEBUG = getenv("LAB12DEBUG") != NULL;
 
 
-
-    get_debug_status_mode_error_handlers_functions(DEBUG);
+    get_debug_status_mode_error_handlers(DEBUG);
+    get_debug_status_mode_functions (DEBUG);
 
     const char *optstring = "P:AONvh";
 
@@ -94,33 +94,40 @@ int main(int argc, char *argv[]){
 
     opt_errors();
 // testing
-    switch (argc - optind) {
-        case 0:
+    if(argc - optind) {
+        if(DEBUG)
+            printf("\nDebug: user provide no args\n");
 
-            if(DEBUG)
-                printf("\nDebug: user provide no args\n");
+        if (ftw(P_dir, scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib, 10) == -1)
+            print_error_message("ftw");
 
-
-            printf("\n%s\nProgram has finished successful!\n%s\n",
+        printf("\n%s\nProgram has finished successful!\n%s\n",
                              STRIPE,                               STRIPE);
 
-            return EXIT_SUCCESS;
-            break;
-        case 1:
+        return EXIT_SUCCESS;
+    } else {
 
-            if (ftw(P_dir, scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib, 10) == -1) {
+        if (!is_directory(argv[-1])){
+
+            if(DEBUG)
+                printf("\nDebug: user provide no dir to scan\n");
+
+            if (ftw(P_dir, scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib, 10) == -1)
                 print_error_message("ftw");
-            }
+
 
 
             printf("\n%s\nProgram has finished successful!\n%s\n",
                    STRIPE,                               STRIPE);
 
-
-
             return EXIT_SUCCESS;
+        }
 
-            break;
+        get_terminal_arguments_from_main_to_functions(argc, argv);
+
+
+
+
 
 
 

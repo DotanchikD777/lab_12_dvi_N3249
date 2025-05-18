@@ -5,6 +5,37 @@
 #include "../include/inc.h"
 #include "../include/plugin_api.h"
 
+
+
+int f_argc = 0;
+char **f_argv = NULL;
+static bool DEBUG;
+
+void get_terminal_arguments_from_main_to_functions (int argc, char *argv[]){
+    f_argc = argc;
+    f_argv = argv;
+}
+
+void get_debug_status_mode_functions (bool flag){
+    if(flag){
+        DEBUG = true;
+    }
+}
+
+
+bool is_directory(const char *path) {
+    struct stat sb;
+
+    if (stat(path, &sb) != 0) {
+        return false;
+    }
+
+    // Проверим, что это именно директория
+    return S_ISDIR(sb.st_mode);
+}
+
+
+
 void print_standart_message(char flag){
     switch (flag) {
         case 'h':
@@ -162,3 +193,8 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
             break;
     }
 }
+
+int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag){
+
+}
+

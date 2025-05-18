@@ -39,7 +39,7 @@ extern bool environment_debug_var;
 
 void opt_errors(void);
 
-void get_debug_status_mode_error_handlers_functions(bool flag);
+void get_debug_status_mode_error_handlers(bool flag);
 
 void print_standart_message(char flag);
 
@@ -51,5 +51,12 @@ int yes_or_no(const char *input);
 
 int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib(const char *fpath, const struct stat *sb, int typeflag);
 
+void get_terminal_arguments_from_main_to_functions (int argc, char *argv[]);
+
+bool is_directory(const char *path);
+
+void get_debug_status_mode_functions (bool flag);
+
+int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag);
 
 #endif

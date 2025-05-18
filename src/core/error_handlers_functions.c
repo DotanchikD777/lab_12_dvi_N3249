@@ -6,7 +6,7 @@
 static bool DEBUG;
 int opt_used_counter[6];
 
-void get_debug_status_mode_error_handlers_functions(bool flag){
+void get_debug_status_mode_error_handlers(bool flag){
     if(flag){
         DEBUG = true;
     }
