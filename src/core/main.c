@@ -123,7 +123,7 @@ int main(int argc, char *argv[]){
             return EXIT_SUCCESS;
         }
 
-        get_terminal_arguments_from_main_to_functions(argc, argv, dir_to_scan);
+        get_terminal_arguments_from_main_to_functions(argc, argv,/*TODO make a variable*/ dir_to_scan);
 
 
 

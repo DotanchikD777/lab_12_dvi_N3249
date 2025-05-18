@@ -134,7 +134,7 @@ bool is_it_so_lib(const char *path) {
     return true;
 }
 
-int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib(const char *fpath, const struct stat *sb, int typeflag){ // пока не тестил надо доделать
+int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib(const char *fpath, const struct stat *sb, int typeflag){
     switch (typeflag) {
         case FTW_D:
             return 0;
@@ -203,7 +203,7 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
     }
 }
 
-int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag){ // Need to finish
+int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag){ //TODO Need to finish
     switch (typeflag) {
         case FTW_D:
             return 0;
@@ -335,7 +335,7 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                 }
             }
 
-            /*// Call plugin_process_file() Need to chose where I have to do fwt() there or in dynamic lib????????? if I will do it there then I have to do wrapper func for plugin_process_file(), else i have to use func like scandir()????
+            /*// Call plugin_process_file()TODO Need to chose where I have to do fwt() there or in dynamic lib????????? if I will do it there then I have to do wrapper func for plugin_process_file(), else i have to use func like scandir()????
             errno = 0;
             ret = ppf_func(file_name, opts_to_pass, opts_to_pass_len);
             fprintf(stdout, "plugin_process_file() returned %d\n", ret);
