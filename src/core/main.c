@@ -19,9 +19,8 @@ int main(int argc, char *argv[]){
     bool N_flag = false;
     char *P_dir = "./lib";
 
-    bool DEBUG = false;
+    bool DEBUG = getenv("LAB12DEBUG") != NULL;
 
-    init_debug_mode(&DEBUG);
 
 
     get_debug_status_mode_error_handlers_functions(DEBUG);

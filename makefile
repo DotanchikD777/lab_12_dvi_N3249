@@ -11,7 +11,7 @@ LIB_DIR         := lib
 TARGET := lab12dviN3249
 
 # Флаги
-CFLAGS  := -Wall -Wextra -I$(INCLUDE_DIR)
+CFLAGS  := -Wall -Wextra -I$(INCLUDE_DIR) -g
 LDFLAGS := -ldl
 
 # Автообнаружение исходников

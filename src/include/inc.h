@@ -48,6 +48,5 @@ void print_error_message(const char *err_msg);
 
 int yes_or_no(const char *input);
 
-void init_debug_mode(bool *debug_flag);
 
 #endif
