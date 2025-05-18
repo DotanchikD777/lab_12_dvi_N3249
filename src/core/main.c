@@ -94,7 +94,7 @@ int main(int argc, char *argv[]){
 
     opt_errors();
 // testing
-    if(argc - optind) {
+    if(argc - optind == 0) {
         if(DEBUG)
             printf("\nDebug: user provide no args\n");
 
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]){
         return EXIT_SUCCESS;
     } else {
 
-        if (!is_directory(argv[-1])){
+        if (is_directory(argv[-1])){
 
             if(DEBUG)
                 printf("\nDebug: user provide no dir to scan\n");
@@ -123,7 +123,9 @@ int main(int argc, char *argv[]){
             return EXIT_SUCCESS;
         }
 
-        get_terminal_arguments_from_main_to_functions(argc, argv);
+        get_terminal_arguments_from_main_to_functions(argc, argv, dir_to_scan);
+
+
 
 
 

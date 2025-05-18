@@ -10,10 +10,12 @@
 int f_argc = 0;
 char **f_argv = NULL;
 static bool DEBUG;
+char *dir_for_scan;
 
-void get_terminal_arguments_from_main_to_functions (int argc, char *argv[]){
+void get_terminal_arguments_from_main_to_functions (int argc, char *argv[], char *dir_for_scan_path){
     f_argc = argc;
     f_argv = argv;
+    dir_for_scan = dir_for_scan_path;
 }
 
 void get_debug_status_mode_functions (bool flag){
@@ -109,7 +111,7 @@ int yes_or_no(const char *input) {
     return (buf[0] == 'y' || buf[0] == 'Y');
 }
 
-bool match_lib_so(const char *path) {
+bool is_it_so_lib(const char *path) {
     // 1) Найдём имя файла (после последнего '/')
     const char *name = strrchr(path, '/');
     if (name) name++;  // если нашли '/', переходим за него
@@ -138,55 +140,62 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
             return 0;
             break;
         case FTW_F:
-            if (match_lib_so(fpath)){
-
-                char *lib_name = strdup(fpath);
-
-                struct plugin_info pi = {0};
-
-                dlerror();
-                void *dl = dlopen(lib_name, RTLD_LAZY);
-
-                if (!dl) {
-                    fprintf(stderr, "ERROR: dlopen() failed: %s\n", dlerror());
-                    return 0;
-                }
-
-                void *func = dlsym(dl, "plugin_get_info");
-
-                if (!func) {
-                    fprintf(stderr, "ERROR: dlsym() for %s failed: %s\n", lib_name, dlerror());
-                    return 0;
-                }
-
-                typedef int (*pgi_func_t)(struct plugin_info*);
-                pgi_func_t pgi_func = (pgi_func_t)func;
-
-                int ret = pgi_func(&pi);
-                if (ret < 0) {
-                    fprintf(stderr, "ERROR: plugin_get_info()  for %s failed\n", lib_name);
-                    return 0;
-                }
-
-                // Plugin info
-                fprintf(stdout, "Plugin purpose:\t\t%s\n", pi.plugin_purpose);
-                fprintf(stdout, "Plugin author:\t\t%s\n", pi.plugin_author);
-                fprintf(stdout, "Supported options: ");
-                if (pi.sup_opts_len > 0) {
-                    fprintf(stdout, "\n");
-                    for (size_t i = 0; i < pi.sup_opts_len; i++) {
-                        fprintf(stdout, "\t--%s\t\t%s\n", pi.sup_opts[i].opt.name, pi.sup_opts[i].opt_descr);
-                    }
-                }
-                else {
-                    fprintf(stdout, "none (!?)\n");
-                }
-                fprintf(stdout, "\n");
-
+            if (!is_it_so_lib(fpath))
                 return 0;
 
-            } else
-                return 0;
+            char *lib_name = strdup(fpath);
+
+            struct plugin_info pi = {0};
+
+            dlerror();
+            void *dl = dlopen(lib_name, RTLD_LAZY);
+
+            if (!dl) {
+                fprintf(stderr, "ERROR: dlopen() in %s failed: %s\n", lib_name, dlerror());
+                goto END;
+            }
+
+            void *func = dlsym(dl, "plugin_get_info");
+
+            if (!func) {
+                fprintf(stderr, "ERROR: dlsym() for %s failed: %s\n", lib_name, dlerror());
+                goto END;
+            }
+
+            typedef int (*pgi_func_t)(struct plugin_info*);
+            pgi_func_t pgi_func = (pgi_func_t)func;
+
+            int ret = pgi_func(&pi);
+            if (ret < 0) {
+                fprintf(stderr, "ERROR: plugin_get_info()  for %s failed\n", lib_name);
+                goto END;
+            }
+
+            // Plugin info
+            printf("\n%s\nYou can add plugin: %s", STRIPE, lib_name);
+            printf("Plugin purpose:\t\t%s\n", pi.plugin_purpose);
+            printf("Plugin author:\t\t%s\n", pi.plugin_author);
+            printf("Supported options: ");
+            if (pi.sup_opts_len > 0) {
+                printf("\n");
+                for (size_t i = 0; i < pi.sup_opts_len; i++) {
+                    printf("\t--%s\t\t%s\n", pi.sup_opts[i].opt.name, pi.sup_opts[i].opt_descr);
+                }
+            }
+            else {
+                printf("none (!?)\n");
+            }
+            if (pi.sup_opts_len == 0) {
+                print_error_message("library supports no options! How so?");
+                goto END;
+            }
+            printf("\n%s\n", STRIPE);
+
+
+            END:
+            if (lib_name) free(lib_name);
+            if (dl) dlclose(dl);
+            return 0;
             break;
         default:
             return 0;
@@ -194,7 +203,165 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
     }
 }
 
-int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag){
+int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag){ // Need to finish
+    switch (typeflag) {
+        case FTW_D:
+            return 0;
+            break;
+        case FTW_F:
+            if (!is_it_so_lib(fpath))
+                return 0;
 
+            int opts_to_pass_len = 0;
+            struct option *opts_to_pass = NULL;
+            struct option *longopts = NULL;
+
+            char *lib_name = strdup(fpath);
+
+            struct plugin_info pi = {0};
+
+            dlerror();
+            void *dl = dlopen(lib_name, RTLD_LAZY);
+
+            if (!dl) {
+                fprintf(stderr, "ERROR: dlopen() in %s failed: %s\n", lib_name, dlerror());
+                goto END;
+            }
+
+            void *func = dlsym(dl, "plugin_get_info");
+
+            if (!func) {
+                fprintf(stderr, "ERROR: dlsym() for %s failed: %s\n", lib_name, dlerror());
+                goto END;
+            }
+
+            typedef int (*pgi_func_t)(struct plugin_info*);
+            pgi_func_t pgi_func = (pgi_func_t)func;
+
+            int ret = pgi_func(&pi);
+            if (ret < 0) {
+                fprintf(stderr, "ERROR: plugin_get_info()  for %s failed\n", lib_name);
+                goto END;
+            }
+
+            if (pi.sup_opts_len == 0) {
+                print_error_message("library supports no options! How so?");
+                goto END;
+            }
+
+            if (DEBUG){
+                printf("\nDEBUG: successfully added plugin %s\n", lib_name);
+            }
+
+            func = dlsym(dl, "plugin_process_file");
+            if (!func) {
+                fprintf(stderr, "ERROR: no plugin_process_file() function found\n");
+                goto END;
+            }
+
+            typedef int (*ppf_func_t)(const char*, struct option*, size_t);
+            ppf_func_t ppf_func = (ppf_func_t)func;
+
+            longopts = calloc(pi.sup_opts_len + 1, sizeof(struct option));
+            if (!longopts) {
+                print_error_message("calloc() failed\nn");
+                goto END;
+            }
+
+            for (size_t i = 0; i < pi.sup_opts_len; i++) {
+                memcpy(longopts + i, &pi.sup_opts[i].opt, sizeof(struct option));
+            }
+
+            opts_to_pass = calloc(pi.sup_opts_len, sizeof(struct option));
+            if (!opts_to_pass) {
+                print_error_message("calloc() failed\nn");
+                goto END;
+            }
+
+
+            if (DEBUG){
+                for (size_t i = 0; i < pi.sup_opts_len; i++) {
+                    fprintf(stderr, "DEBUG: to getopt(): passing option '%s'\n",
+                            (longopts + i)->name);
+                }
+            }
+
+            while (1) {
+                int opt_ind = 0;
+                ret = getopt_long(f_argc, f_argv, "", longopts, &opt_ind);
+                if (ret == -1) break;
+
+                if (ret != 0) {
+                    fprintf(stderr, "ERROR: failed to parse options\n");
+                    goto END;
+                }
+
+                #ifndef ALLOW_OPT_ABBREV
+                // glibc quirk: no proper way to disable option abbreviations
+                // https://stackoverflow.com/questions/5182041/turn-off-abbreviation-in-getopt-long-optarg-h
+                int idx = (longopts + opt_ind)->has_arg ? 2 : 1;
+                const char *actual_opt_name = f_argv[optind - idx] + 2; // +2 for -- before option
+                const char *found_opt_name = (longopts + opt_ind)->name;
+                if (strcmp(actual_opt_name, found_opt_name)) {
+                    // It's probably abbreviated name, which we do not allow
+                    fprintf(stderr, "ERROR: unknown option: %s\n", f_argv[optind - idx]);
+                    goto END;
+                }
+                #endif
+
+                // Check how many options we got up to this moment
+                if ((size_t)opts_to_pass_len == pi.sup_opts_len) {
+                    fprintf(stderr, "ERROR: too many options!\n");
+                    goto END;
+                }
+
+                // Add this option to array of options actually passed to plugin_process_file()
+                memcpy(opts_to_pass + opts_to_pass_len, longopts + opt_ind, sizeof(struct option));
+                // Argument (if any) is passed in flag
+                if ((longopts + opt_ind)->has_arg) {
+                    // Mind this!
+                    // flag is of type int*, but we are passing char* here (it's ok to do so).
+                    (opts_to_pass + opts_to_pass_len)->flag = (int*)strdup(optarg);
+                }
+                opts_to_pass_len++;
+            }
+
+            if (DEBUG) {
+                fprintf(stderr, "DEBUG: opts_to_pass_len = %d\n", opts_to_pass_len);
+                for (int i = 0; i < opts_to_pass_len; i++) {
+                    fprintf(stderr, "DEBUG: passing option '%s' with arg '%s'\n",
+                            (opts_to_pass + i)->name,
+                            (char*)(opts_to_pass + i)->flag);
+                }
+            }
+
+            /*// Call plugin_process_file() Need to chose where I have to do fwt() there or in dynamic lib????????? if I will do it there then I have to do wrapper func for plugin_process_file(), else i have to use func like scandir()????
+            errno = 0;
+            ret = ppf_func(file_name, opts_to_pass, opts_to_pass_len);
+            fprintf(stdout, "plugin_process_file() returned %d\n", ret);
+            if (ret < 0) {
+                fprintf(stdout, "Error information: %s\n", strerror(errno));
+            }*/
+
+
+
+            END:
+            if (opts_to_pass) {
+                for (int i = 0; i < opts_to_pass_len; i++)
+                    free( (opts_to_pass + i)->flag );
+                free(opts_to_pass);
+            }
+            if (longopts) free(longopts);
+            if (lib_name) free(lib_name);
+            //if (file_name) free(file_name);
+            if (dl) dlclose(dl);
+
+            return 0;
+            break;
+
+        default:
+            return 0;
+            break;
+    }
 }
 
