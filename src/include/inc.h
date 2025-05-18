@@ -36,7 +36,7 @@ extern bool environment_debug_var;
 
 //Functions
 
-void opt_errors();
+void opt_errors(void);
 
 void get_debug_status_mode_error_handlers_functions(bool flag);
 
@@ -46,5 +46,8 @@ void punish_dummy_user(const char *err_msg);
 
 void print_error_message(const char *err_msg);
 
+int yes_or_no(const char *input);
+
+void init_debug_mode(bool *debug_flag);
 
 #endif

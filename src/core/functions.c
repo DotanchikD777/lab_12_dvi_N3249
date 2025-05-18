@@ -60,3 +60,42 @@ void print_standart_message(char flag){
     }
 
 }
+
+int yes_or_no(const char *input) {
+    enum { BUF_SIZE = 2 };
+    char buf[BUF_SIZE];
+
+    printf("%s [y/N]: ", input);
+    if (!fgets(buf, BUF_SIZE, stdin))
+        return 0;
+
+    if (!strchr(buf, '\n')) {
+        int c;
+        while ((c = getchar()) != '\n' && c != EOF);
+    }
+
+    return (buf[0] == 'y' || buf[0] == 'Y');
+}
+
+void init_debug_mode(bool *debug_flag) {
+    const char *env = getenv("LAB12DEBUG");
+
+    if (env && strcmp(env, "1") == 0) {
+        *debug_flag = true;
+        return;
+    }
+
+    if (env && strcmp(env, "-1") == 0)
+        return;
+
+
+    if (yes_or_no("\nDebug mode is off. Enable debug?"))
+        *debug_flag = true;
+    else
+        *debug_flag = false;
+
+
+    if (setenv("LAB12DEBUG", "-1", 1) != 0)
+        print_error_message("setenv");
+
+}
