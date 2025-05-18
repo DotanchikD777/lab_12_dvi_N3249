@@ -10,8 +10,9 @@
 #include <unistd.h>   // sleep()
 #include <string.h>
 #include <dlfcn.h>
-#include <ftw.h> // ftw()
 #include <string.h>
+#include <ftw.h>
+#include <sys/stat.h>
 
 //defines
 #define A_USED 0
@@ -47,6 +48,8 @@ void punish_dummy_user(const char *err_msg);
 void print_error_message(const char *err_msg);
 
 int yes_or_no(const char *input);
+
+int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib(const char *fpath, const struct stat *sb, int typeflag);
 
 
 #endif

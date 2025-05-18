@@ -17,7 +17,7 @@ int main(int argc, char *argv[]){
     bool A_flag = false;
     bool O_flag = false;
     bool N_flag = false;
-    char *P_dir = "./lib";
+    char *P_dir = NULL;
 
     bool DEBUG = getenv("LAB12DEBUG") != NULL;
 
@@ -83,7 +83,13 @@ int main(int argc, char *argv[]){
     if(!opt_used_counter[O_USED] && !opt_used_counter[A_USED]){
         A_flag = true;
         if(DEBUG)
-            printf("\nDebug: default case --> A=%d", A_flag);
+            printf("\nDebug: default case --> A=%d\n", A_flag);
+    }
+
+    if (!P_dir){
+        P_dir = "./lib/";
+        if (DEBUG)
+            printf("\nDebug: default case --> P_dir=%s\n", P_dir);
     }
 
     opt_errors();
@@ -92,7 +98,7 @@ int main(int argc, char *argv[]){
         case 0:
 
             if(DEBUG)
-                printf("Debug: user provide no args");
+                printf("\nDebug: user provide no args\n");
 
 
             printf("\n%s\nProgram has finished successful!\n%s\n",
@@ -100,24 +106,23 @@ int main(int argc, char *argv[]){
 
             return EXIT_SUCCESS;
             break;
-            // need to do other things and test init_debug_mode function
+        case 1:
+
+            if (ftw(P_dir, scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib, 10) == -1) {
+                print_error_message("ftw");
+            }
+
+
+            printf("\n%s\nProgram has finished successful!\n%s\n",
+                   STRIPE,                               STRIPE);
+
+
+
+            return EXIT_SUCCESS;
+
+            break;
+
 
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

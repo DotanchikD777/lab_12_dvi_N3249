@@ -55,7 +55,7 @@ void punish_dummy_user(const char *err_msg){
 
 void print_error_message(const char *err_msg){
 
-    fprintf(stderr, "Error: %s", err_msg);
+    fprintf(stderr, "Error: %s\n", err_msg);
 
     exit(EXIT_FAILURE);
 

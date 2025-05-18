@@ -3,6 +3,7 @@
 //
 
 #include "../include/inc.h"
+#include "../include/plugin_api.h"
 
 void print_standart_message(char flag){
     switch (flag) {
@@ -75,4 +76,89 @@ int yes_or_no(const char *input) {
     }
 
     return (buf[0] == 'y' || buf[0] == 'Y');
+}
+
+bool match_lib_so(const char *path) {
+    // 1) Найдём имя файла (после последнего '/')
+    const char *name = strrchr(path, '/');
+    if (name) name++;  // если нашли '/', переходим за него
+    else      name = path;
+
+    // 2) Проверим длину: она должна быть >= strlen("lib") + strlen(".so")
+    size_t len = strlen(name);
+    if (len < 3 + 3)  // 3 символа в "lib" + 3 в ".so"
+        return false;
+
+    // 3) Проверим префикс "lib"
+    if (name[0] != 'l' || name[1] != 'i' || name[2] != 'b')
+        return false;
+
+    // 4) Проверим суффикс ".so"
+    if (name[len-3] != '.' || name[len-2] != 's' || name[len-1] != 'o')
+        return false;
+
+    // Всё ок
+    return true;
+}
+
+int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib(const char *fpath, const struct stat *sb, int typeflag){ // пока не тестил надо доделать
+    switch (typeflag) {
+        case FTW_D:
+            return 0;
+            break;
+        case FTW_F:
+            if (match_lib_so(fpath)){
+
+                char *lib_name = strdup(fpath);
+
+                struct plugin_info pi = {0};
+
+                dlerror();
+                void *dl = dlopen(lib_name, RTLD_LAZY);
+
+                if (!dl) {
+                    fprintf(stderr, "ERROR: dlopen() failed: %s\n", dlerror());
+                    return 0;
+                }
+
+                void *func = dlsym(dl, "plugin_get_info");
+
+                if (!func) {
+                    fprintf(stderr, "ERROR: dlsym() for %s failed: %s\n", lib_name, dlerror());
+                    return 0;
+                }
+
+                typedef int (*pgi_func_t)(struct plugin_info*);
+                pgi_func_t pgi_func = (pgi_func_t)func;
+
+                int ret = pgi_func(&pi);
+                if (ret < 0) {
+                    fprintf(stderr, "ERROR: plugin_get_info()  for %s failed\n", lib_name);
+                    return 0;
+                }
+
+                // Plugin info
+                fprintf(stdout, "Plugin purpose:\t\t%s\n", pi.plugin_purpose);
+                fprintf(stdout, "Plugin author:\t\t%s\n", pi.plugin_author);
+                fprintf(stdout, "Supported options: ");
+                if (pi.sup_opts_len > 0) {
+                    fprintf(stdout, "\n");
+                    for (size_t i = 0; i < pi.sup_opts_len; i++) {
+                        fprintf(stdout, "\t--%s\t\t%s\n", pi.sup_opts[i].opt.name, pi.sup_opts[i].opt_descr);
+                    }
+                }
+                else {
+                    fprintf(stdout, "none (!?)\n");
+                }
+                fprintf(stdout, "\n");
+
+                return 0;
+
+            } else
+                return 0;
+            break;
+        default:
+            return 0;
+            break;
+    }
 }

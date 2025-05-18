@@ -40,3 +40,5 @@ int plugin_get_info(struct plugin_info* ppi) {
 
     return 0;
 }
+
+//int plugin_process_dir(const char *directory, )
