@@ -16,6 +16,9 @@ void get_terminal_arguments_from_main_to_functions (int argc, char *argv[], char
     f_argc = argc;
     f_argv = argv;
     dir_for_scan = dir_for_scan_path;
+    if (DEBUG)
+        printf("\nDebug: get command args to functions file\n");
+
 }
 
 void get_debug_status_mode_functions (bool flag){

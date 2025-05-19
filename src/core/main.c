@@ -107,7 +107,7 @@ int main(int argc, char *argv[]){
         return EXIT_SUCCESS;
     } else {
 
-        if (is_directory(argv[-1])){
+        if (!is_directory(argv[-1])){
 
             if(DEBUG)
                 printf("\nDebug: user provide no dir to scan\n");
@@ -123,7 +123,14 @@ int main(int argc, char *argv[]){
             return EXIT_SUCCESS;
         }
 
-        get_terminal_arguments_from_main_to_functions(argc, argv,/*TODO make a variable*/ dir_to_scan);
+        char *dir_to_scan = argv[-1];
+
+        if (DEBUG)
+            printf("\nDebug: user provide %s dir to scan\n", dir_to_scan);
+
+
+
+        get_terminal_arguments_from_main_to_functions(argc, argv,dir_to_scan);
 
 
 
