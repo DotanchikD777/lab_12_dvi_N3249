@@ -66,7 +66,8 @@ int main(int argc, char *argv[]){
                 opt_used_counter[V_USED] += 1;
                 break;
             case '?':
-                print_error_message("corrupted options");
+                if (DEBUG)
+                    printf("Debug: unrecognized option %s, if no plugin procces it program will crash\n", argv[option_index]);
                 break;
             default:
                 print_error_message("impossible error");
@@ -107,10 +108,10 @@ int main(int argc, char *argv[]){
         return EXIT_SUCCESS;
     } else {
 
-        if (!is_directory(argv[-1])){
+        if (!is_directory(argv[argc-1])){
 
             if(DEBUG)
-                printf("\nDebug: user provide no dir to scan\n");
+                printf("\nDebug: user provide no dir to scan: %s\n", argv[argc-1]);
 
             if (ftw(P_dir, scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib, 10) == -1)
                 print_error_message("ftw");
@@ -123,7 +124,7 @@ int main(int argc, char *argv[]){
             return EXIT_SUCCESS;
         }
 
-        char *dir_to_scan = argv[-1];
+        char *dir_to_scan = argv[argc-1];
 
         if (DEBUG)
             printf("\nDebug: user provide %s dir to scan\n", dir_to_scan);
@@ -131,6 +132,9 @@ int main(int argc, char *argv[]){
 
 
         get_terminal_arguments_from_main_to_functions(argc, argv,dir_to_scan);
+
+        if (ftw(P_dir, scan_dir_via_dynamic_lib_or_libs_for_matches, 10) == -1)
+            print_error_message("ftw");
 
 
 

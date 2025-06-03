@@ -12,7 +12,9 @@
 #include <dlfcn.h>
 #include <string.h>
 #include <ftw.h>
+#include <fts.h>
 #include <sys/stat.h>
+#include <errno.h>
 
 //defines
 #define A_USED 0

@@ -42,6 +42,6 @@ int plugin_get_info(struct plugin_info* ppi) {
 }
 
 int plugin_process_file(const char *fname, struct option in_opts[], size_t in_opts_len) { //TODO Need to finish
-
+    printf( "\nPPI !!! proccesing file: %s,\n opt detected: %s,\n opt_len = %zu", fname, in_opts[0].name, in_opts_len);
     return 0;
 }
