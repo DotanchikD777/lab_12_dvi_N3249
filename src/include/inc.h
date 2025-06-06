@@ -61,4 +61,10 @@ void get_debug_status_mode_functions (bool flag);
 
 int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag);
 
+struct option* get_all_options(char *plugin_dir_path, size_t *count);
+
+bool is_it_so_lib(const char *path);
+
+char * get_p_dir(int count, char **args);
+
 #endif

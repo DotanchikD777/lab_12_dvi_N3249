@@ -17,7 +17,7 @@ int main(int argc, char *argv[]){
     bool A_flag = false;
     bool O_flag = false;
     bool N_flag = false;
-    char *P_dir = NULL;
+    char *P_dir = get_p_dir(argc, argv);
 
     bool DEBUG = getenv("LAB12DEBUG") != NULL;
 
@@ -27,16 +27,8 @@ int main(int argc, char *argv[]){
 
     const char *optstring = "P:AONvh";
 
-
-    static struct option long_options[] = {
-        {"P",   required_argument,  0,    'P'},
-        {"A",   no_argument,        0,    'A'},
-        {"O",   no_argument,        0,    'O'},
-        {"N",   no_argument,        0,    'N'},
-        {"help",   no_argument,     0,    'h'},
-        {"version",   no_argument,  0,    'v'},
-        {0, 0, 0, 0}
-    };
+    size_t count_opt = 0;
+    struct option *long_options = get_all_options(P_dir, &count_opt);
 
     while ((opt = getopt_long(argc, argv, optstring, long_options, &option_index)) != -1){
 
@@ -66,8 +58,8 @@ int main(int argc, char *argv[]){
                 opt_used_counter[V_USED] += 1;
                 break;
             case '?':
-                if (DEBUG)
-                    printf("Debug: unrecognized option %s, if no plugin procces it program will crash\n", argv[option_index]);
+                //print_error_message("corrupted options");
+                printf("\nunrecognized option\n");
                 break;
             default:
                 print_error_message("impossible error");
@@ -94,7 +86,17 @@ int main(int argc, char *argv[]){
     }
 
     opt_errors();
-// testing
+    printf("\nDEBUG: options count: %zu, P_dir = %s\n", count_opt, P_dir);
+    for (size_t i = 0; i < count_opt; i++){
+        printf("\nDEBUG: cached option: %s\n", long_options[i].name);
+    }
+    return 0;
+
+
+
+
+
+    // before fixing options parsing bug this code below are not working
     if(argc - optind == 0) {
         if(DEBUG)
             printf("\nDebug: user provide no args\n");
@@ -104,7 +106,7 @@ int main(int argc, char *argv[]){
 
         printf("\n%s\nProgram has finished successful!\n%s\n",
                              STRIPE,                               STRIPE);
-
+        free(long_options);
         return EXIT_SUCCESS;
     } else {
 
@@ -120,7 +122,7 @@ int main(int argc, char *argv[]){
 
             printf("\n%s\nProgram has finished successful!\n%s\n",
                    STRIPE,                               STRIPE);
-
+            free(long_options);
             return EXIT_SUCCESS;
         }
 
@@ -143,6 +145,7 @@ int main(int argc, char *argv[]){
 
 
 
-
+        free(long_options);
+        return EXIT_SUCCESS;
     }
 }
