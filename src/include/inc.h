@@ -31,6 +31,7 @@
 #define PROGNAME "lab11dviN3249"
 #define VERSION "0.5"
 
+// TODO need to make all code and errors/debug messages in one style and write comments
 //Globals
 
 extern int opt_used_counter[6];
