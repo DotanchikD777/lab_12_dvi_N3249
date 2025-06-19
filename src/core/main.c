@@ -17,7 +17,7 @@ int main(int argc, char *argv[]){
     bool A_flag = false;
     bool O_flag = false;
     bool N_flag = false;
-    char *P_dir = NULL;
+    char *P_dir = get_p_dir(argc, argv);
 
     bool DEBUG = getenv("LAB12DEBUG") != NULL;
 
@@ -27,20 +27,15 @@ int main(int argc, char *argv[]){
 
     const char *optstring = "P:AONvh";
 
-
-    static struct option long_options[] = {
-        {"P",   required_argument,  0,    'P'},
-        {"A",   no_argument,        0,    'A'},
-        {"O",   no_argument,        0,    'O'},
-        {"N",   no_argument,        0,    'N'},
-        {"help",   no_argument,     0,    'h'},
-        {"version",   no_argument,  0,    'v'},
-        {0, 0, 0, 0}
-    };
+    size_t count_opt = 0;
+    struct option *long_options = get_all_options(P_dir, &count_opt);
 
     while ((opt = getopt_long(argc, argv, optstring, long_options, &option_index)) != -1){
 
         switch (opt) {
+            case 0:
+                /* plugin-specific option parsed */
+                break;
             case 'A':
                 A_flag = true;
                 opt_used_counter[A_USED] += 1;
@@ -93,7 +88,13 @@ int main(int argc, char *argv[]){
     }
 
     opt_errors();
-// testing
+    printf("\nDEBUG: options count: %zu, P_dir = %s\n", count_opt, P_dir);
+    for (size_t i = 0; i < count_opt; i++){
+        printf("\nDEBUG: cached option: %s\n", long_options[i].name);
+    }
+
+
+
     if(argc - optind == 0) {
         if(DEBUG)
             printf("\nDebug: user provide no args\n");
@@ -103,14 +104,14 @@ int main(int argc, char *argv[]){
 
         printf("\n%s\nProgram has finished successful!\n%s\n",
                              STRIPE,                               STRIPE);
-
+        free(long_options);
         return EXIT_SUCCESS;
     } else {
 
-        if (!is_directory(argv[-1])){
+        if (!is_directory(argv[argc-1])){
 
             if(DEBUG)
-                printf("\nDebug: user provide no dir to scan\n");
+                printf("\nDebug: user provide no dir to scan: %s\n", argv[argc-1]);
 
             if (ftw(P_dir, scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib, 10) == -1)
                 print_error_message("ftw");
@@ -119,11 +120,11 @@ int main(int argc, char *argv[]){
 
             printf("\n%s\nProgram has finished successful!\n%s\n",
                    STRIPE,                               STRIPE);
-
+            free(long_options);
             return EXIT_SUCCESS;
         }
 
-        char *dir_to_scan = argv[-1];
+        char *dir_to_scan = argv[argc-1];
 
         if (DEBUG)
             printf("\nDebug: user provide %s dir to scan\n", dir_to_scan);
@@ -132,6 +133,8 @@ int main(int argc, char *argv[]){
 
         get_terminal_arguments_from_main_to_functions(argc, argv,dir_to_scan);
 
+        if (ftw(P_dir, scan_dir_via_dynamic_lib_or_libs_for_matches, 10) == -1)
+            print_error_message("ftw");
 
 
 
@@ -140,5 +143,7 @@ int main(int argc, char *argv[]){
 
 
 
+        free(long_options);
+        return EXIT_SUCCESS;
     }
 }

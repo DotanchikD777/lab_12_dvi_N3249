@@ -175,7 +175,7 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
             }
 
             // Plugin info
-            printf("\n%s\nYou can add plugin: %s", STRIPE, lib_name);
+            printf("\n%s\nYou can add plugin: %s\n", STRIPE, lib_name);
             printf("Plugin purpose:\t\t%s\n", pi.plugin_purpose);
             printf("Plugin author:\t\t%s\n", pi.plugin_author);
             printf("Supported options: ");
@@ -206,7 +206,7 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
     }
 }
 
-int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag){ //TODO Need to finish
+int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag){ //TODO Need to fix parsing options
     switch (typeflag) {
         case FTW_D:
             return 0;
@@ -289,10 +289,23 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                 }
             }
 
+            optind = 1;
+            int saved_opterr = opterr;
+            opterr = 0;
             while (1) {
                 int opt_ind = 0;
+                if(DEBUG){
+                    int ff = f_argc;
+                    printf("\nDebug: f_argc = %d", f_argc);
+                    for (int i = 0; i < f_argc; i++){
+                        printf("\t f_argv[%d] = %s\n", i, f_argv[i]);
+                    }
+                }
                 ret = getopt_long(f_argc, f_argv, "", longopts, &opt_ind);
                 if (ret == -1) break;
+
+                if (ret == '?')
+                    continue;
 
                 if (ret != 0) {
                     fprintf(stderr, "ERROR: failed to parse options\n");
@@ -328,6 +341,9 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                 }
                 opts_to_pass_len++;
             }
+            opterr = saved_opterr;
+            if (opts_to_pass_len == 0 )
+                goto END;
 
             if (DEBUG) {
                 fprintf(stderr, "DEBUG: opts_to_pass_len = %d\n", opts_to_pass_len);
@@ -338,13 +354,26 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                 }
             }
 
-            /*// Call plugin_process_file()TODO Need to chose where I have to do fwt() there or in dynamic lib????????? if I will do it there then I have to do wrapper func for plugin_process_file(), else i have to use func like scandir()????
-            errno = 0;
-            ret = ppf_func(file_name, opts_to_pass, opts_to_pass_len);
-            fprintf(stdout, "plugin_process_file() returned %d\n", ret);
-            if (ret < 0) {
-                fprintf(stdout, "Error information: %s\n", strerror(errno));
-            }*/
+
+
+            FTS *ftsp;
+            FTSENT *entry;
+            char *path_t[] = {dir_for_scan, NULL};
+
+            ftsp = fts_open(path_t, FTS_NOCHDIR | FTS_PHYSICAL, NULL);
+
+            if (!ftsp) {
+                print_error_message("fts_open");
+            }
+
+            while ((entry = fts_read(ftsp)) != NULL) {
+                if (entry->fts_info == FTS_F) {
+                    errno = 0;
+                    ret = ppf_func(entry->fts_path, opts_to_pass, opts_to_pass_len);
+                    if (ret < 0)
+                        fprintf(stdout, "Error information: %s\n", strerror(errno));
+                }
+            }
 
 
 

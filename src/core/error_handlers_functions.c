@@ -13,7 +13,7 @@ void get_debug_status_mode_error_handlers(bool flag){
 }
 
 
-void opt_errors(){
+void opt_errors(void){
     for (int i = 0; i < 6; i++){ //too much usage of options
         if(opt_used_counter[i] > 1){
             printf("\nError: option abuse\n");
