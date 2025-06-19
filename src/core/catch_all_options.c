@@ -64,9 +64,8 @@ struct option* get_all_options(char *plugin_dir_path, size_t *count){
         print_error_message("fts_open");
     }
 
-    size_t count_core = 1;
-    struct option *core_options = calloc(1, sizeof(struct option));
-    core_options[0] = (struct option){ 0, 0, 0, 0 };
+    size_t count_core = 0;
+    struct option *core_options = NULL;
 
     for (int i = 0; i < 6; i++){
         add_long_option(&core_options, &count_core, long_options_img[i]);
@@ -76,7 +75,7 @@ struct option* get_all_options(char *plugin_dir_path, size_t *count){
     while ((entry = fts_read(ftsp)) != NULL) {
         if (entry->fts_info == FTS_F) {
             if (!is_it_so_lib(entry->fts_path))
-                return 0;
+                continue;
 
             char *lib_name = strdup(entry->fts_path);
 
@@ -108,8 +107,12 @@ struct option* get_all_options(char *plugin_dir_path, size_t *count){
 
             // Plugin info
             if (pi.sup_opts_len > 0)
-                for (size_t i = 0; i < pi.sup_opts_len; i++)
-                    add_long_option(&core_options, &count_core, pi.sup_opts[i].opt);
+                for (size_t i = 0; i < pi.sup_opts_len; i++) {
+                    struct option tmp = pi.sup_opts[i].opt;
+                    if (tmp.name)
+                        tmp.name = strdup(tmp.name);
+                    add_long_option(&core_options, &count_core, tmp);
+                }
             else
                 printf("none (!?)\n");
             if (pi.sup_opts_len == 0) {
@@ -122,6 +125,9 @@ struct option* get_all_options(char *plugin_dir_path, size_t *count){
             if (dl) dlclose(dl);
         }
     }
+
+    if (ftsp)
+        fts_close(ftsp);
 
     *count = count_core;
     return core_options;

@@ -45,5 +45,6 @@ int plugin_get_info(struct plugin_info* ppi) {
 }
 
 int plugin_process_file(const char *fname, struct option in_opts[], size_t in_opts_len) {
+    printf("\nTEST!!!\n");
     return 0;
 }
