@@ -6,7 +6,8 @@
 // var only in this file
 
 
-
+char **global_maches = NULL;
+size_t global_maches_len = 0;
 
 
 
@@ -88,9 +89,12 @@ int main(int argc, char *argv[]){
     }
 
     opt_errors();
-    printf("\nDEBUG: options count: %zu, P_dir = %s\n", count_opt, P_dir);
-    for (size_t i = 0; i < count_opt; i++){
-        printf("\nDEBUG: cached option: %s\n", long_options[i].name);
+
+    if (DEBUG) {
+        printf("\nDEBUG: options count: %zu, P_dir = %s\n", count_opt, P_dir);
+        for (size_t i = 0; i < count_opt; i++) {
+            printf("\nDEBUG: cached option: %s\n", long_options[i].name);
+        }
     }
 
 
@@ -142,7 +146,14 @@ int main(int argc, char *argv[]){
 
 
 
+        for (size_t i = 0; i < global_maches_len; i++)
+        {
+            free(global_maches[i]);
+        }
 
+        free(global_maches);
+        global_maches = NULL;
+        global_maches_len = 0;
         free(long_options);
         return EXIT_SUCCESS;
     }

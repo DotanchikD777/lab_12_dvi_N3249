@@ -35,8 +35,8 @@
 
 extern int opt_used_counter[6];
 
-extern bool environment_debug_var;
-
+extern char **global_maches;
+extern size_t global_maches_len;
 //Functions
 
 void opt_errors(void);
@@ -66,4 +66,6 @@ struct option* get_all_options(char *plugin_dir_path, size_t *count);
 bool is_it_so_lib(const char *path);
 
 char * get_p_dir(int argc, char **argv);
+
+void add_string_to_global(const char *new_string);
 #endif

@@ -206,6 +206,30 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
     }
 }
 
+void add_string_to_global(const char *new_string)
+{
+    // Расширяем массив на один элемент
+    char **temp = realloc(global_maches, (global_maches_len + 1) * sizeof(char *));
+
+    if (temp == NULL)
+    {
+        fprintf(stderr, "\nОшибка: не удалось выделить память\n");
+        exit(EXIT_FAILURE);
+    }
+    global_maches = temp;
+
+    // Создаем копию строки и сохраняем её в новом элементе массива
+    global_maches[global_maches_len] = strdup(new_string);
+    if (global_maches[global_maches_len] == NULL)
+    {
+        fprintf(stderr, "\nОшибка: не удалось скопировать сторку\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // Увеличиваем счетчик строк
+    global_maches_len++;
+}
+
 int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag){ //TODO Need to fix parsing options
     switch (typeflag) {
         case FTW_D:
@@ -372,6 +396,13 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                     ret = ppf_func(entry->fts_path, opts_to_pass, opts_to_pass_len);
                     if (ret < 0)
                         fprintf(stdout, "Error information: %s\n", strerror(errno));
+
+                    if (ret > 0)
+                        continue;
+
+                    if (ret == 0){
+                        add_string_to_global(entry->fts_path);
+                    }
                 }
             }
 
