@@ -58,8 +58,7 @@ int main(int argc, char *argv[]){
                 opt_used_counter[V_USED] += 1;
                 break;
             case '?':
-                //print_error_message("corrupted options");
-                printf("\nunrecognized option\n");
+                print_error_message("corrupted options");
                 break;
             default:
                 print_error_message("impossible error");
