@@ -65,6 +65,5 @@ struct option* get_all_options(char *plugin_dir_path, size_t *count);
 
 bool is_it_so_lib(const char *path);
 
-char * get_p_dir(int count, char **args);
-
+char * get_p_dir(int argc, char **argv);
 #endif

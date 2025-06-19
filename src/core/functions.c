@@ -290,6 +290,8 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
             }
 
             optind = 1;
+            int saved_opterr = opterr;
+            opterr = 0;
             while (1) {
                 int opt_ind = 0;
                 if(DEBUG){
@@ -301,6 +303,9 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                 }
                 ret = getopt_long(f_argc, f_argv, "", longopts, &opt_ind);
                 if (ret == -1) break;
+
+                if (ret == '?')
+                    continue;
 
                 if (ret != 0) {
                     fprintf(stderr, "ERROR: failed to parse options\n");
@@ -336,6 +341,7 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                 }
                 opts_to_pass_len++;
             }
+            opterr = saved_opterr;
             if (opts_to_pass_len == 0 )
                 goto END;
 

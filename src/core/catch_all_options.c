@@ -15,21 +15,29 @@ static struct option long_options_img[] = {
         {"version",   no_argument,  0,    'v'},
 };
 
-char * get_p_dir(int count, char **args){
-    for (int i = 0; i < count; i++){
-        if (strcmp(args[i], "-P"))
-            continue;
-
-        if (!is_directory(args[i+1]))
-            continue;
-
-        return args[i+1];
+char * get_p_dir(int argc, char **argv){
+    for (int i = 0; i < argc; i++){
+        if (strcmp(argv[i], "-P") == 0){
+            if (i + 1 >= argc)
+                print_error_message("-P requires directory argument");
+            if (!is_directory(argv[i+1]))
+                print_error_message("-P argument is not a directory");
+            return argv[i+1];
+        }
     }
     return "./lib";
 }
 
 
 static void add_long_option(struct option **opts_ptr, size_t *count_ptr, struct option newopt) {
+
+    // check for duplicate names
+    for (size_t i = 0; i < *count_ptr; i++) {
+        if ((*opts_ptr)[i].name && newopt.name &&
+            strcmp((*opts_ptr)[i].name, newopt.name) == 0) {
+            print_error_message("duplicate option detected");
+        }
+    }
     // новое число «реальных» элементов:
     size_t old_count = *count_ptr;
     size_t new_count = old_count + 1;
