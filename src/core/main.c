@@ -33,6 +33,9 @@ int main(int argc, char *argv[]){
     while ((opt = getopt_long(argc, argv, optstring, long_options, &option_index)) != -1){
 
         switch (opt) {
+            case 0:
+                /* plugin-specific option parsed */
+                break;
             case 'A':
                 A_flag = true;
                 opt_used_counter[A_USED] += 1;
