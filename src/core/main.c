@@ -142,12 +142,7 @@ int main(int argc, char *argv[]){
 
         apply_logic(dir_to_scan, A_flag, O_flag, N_flag);
 
-        // TODO in this branch all the work is here, mabe output unit will be in another file
-        printf("%s\nRESULTS:\n",STRIPE);
-        for (size_t i = 0; i < global_maches_len; i++ ){
-            printf("\t%s\n", global_maches[i]);
-        }
-        printf("\nFinished\n%s", STRIPE);
+
 
 
 
