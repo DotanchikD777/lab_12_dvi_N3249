@@ -115,7 +115,7 @@ int yes_or_no(const char *input) {
 }
 
 bool is_it_so_lib(const char *path) {
-    // 1) Найдём имя файла (после последнего '/')
+    // 1) Найдём имя файла (после последнего '/' )
     const char *name = strrchr(path, '/');
     if (name) name++;  // если нашли '/', переходим за него
     else      name = path;
@@ -319,7 +319,6 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
             while (1) {
                 int opt_ind = 0;
                 if(DEBUG){
-                    int ff = f_argc;
                     printf("\nDebug: f_argc = %d", f_argc);
                     for (int i = 0; i < f_argc; i++){
                         printf("\t f_argv[%d] = %s\n", i, f_argv[i]);

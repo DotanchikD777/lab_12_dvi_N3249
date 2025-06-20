@@ -143,6 +143,11 @@ int main(int argc, char *argv[]){
 
 
         // TODO in this branch all the work is here, mabe output unit will be in another file
+        printf("%s\nRESULTS:\n",STRIPE);
+        for (size_t i = 0; i < global_maches_len; i++ ){
+            printf("\t%s\n", global_maches[i]);
+        }
+        printf("\nFinished\n%s", STRIPE);
 
 
 
