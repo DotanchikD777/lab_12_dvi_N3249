@@ -31,7 +31,6 @@
 #define PROGNAME "lab11dviN3249"
 #define VERSION "0.5"
 
-// TODO need to make all code and errors/debug messages in one style and write comments
 //Globals
 
 extern int opt_used_counter[6];
@@ -68,6 +67,8 @@ struct option* get_all_options(char *plugin_dir_path, size_t *count);
 bool is_it_so_lib(const char *path);
 
 char * get_p_dir(int argc, char **argv);
+
+void print_matches_tree(void);
 
 void apply_logic(const char *dir, bool A, bool O, bool N);
 #endif

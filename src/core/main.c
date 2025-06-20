@@ -142,9 +142,7 @@ int main(int argc, char *argv[]){
 
         apply_logic(dir_to_scan, A_flag, O_flag, N_flag);
 
-
-
-
+        print_matches_tree();
 
         for (size_t i = 0; i < global_maches_len; i++)
         {
