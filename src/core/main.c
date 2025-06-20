@@ -140,7 +140,7 @@ int main(int argc, char *argv[]){
         if (ftw(P_dir, scan_dir_via_dynamic_lib_or_libs_for_matches, 10) == -1)
             print_error_message("ftw");
 
-
+        apply_logic(dir_to_scan, A_flag, O_flag, N_flag);
 
         // TODO in this branch all the work is here, mabe output unit will be in another file
         printf("%s\nRESULTS:\n",STRIPE);
@@ -155,6 +155,8 @@ int main(int argc, char *argv[]){
         {
             free(global_maches[i]);
         }
+
+
 
         free(global_maches);
         global_maches = NULL;

@@ -38,6 +38,7 @@ extern int opt_used_counter[6];
 
 extern char **global_maches;
 extern size_t global_maches_len;
+extern size_t plugins_used;
 //Functions
 
 void opt_errors(void);
@@ -68,5 +69,5 @@ bool is_it_so_lib(const char *path);
 
 char * get_p_dir(int argc, char **argv);
 
-void add_string_to_global(const char *new_string);
+void apply_logic(const char *dir, bool A, bool O, bool N);
 #endif

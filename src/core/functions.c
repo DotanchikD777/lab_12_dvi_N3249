@@ -12,6 +12,9 @@ char **f_argv = NULL;
 static bool DEBUG;
 char *dir_for_scan;
 
+size_t plugins_used = 0;
+
+
 void get_terminal_arguments_from_main_to_functions (int argc, char *argv[], char *dir_for_scan_path){
     f_argc = argc;
     f_argv = argv;
@@ -37,6 +40,101 @@ bool is_directory(const char *path) {
 
     // Проверим, что это именно директория
     return S_ISDIR(sb.st_mode);
+}
+
+
+static int str_in_array(char **arr, size_t len, const char *str){
+    for(size_t i=0;i<len;i++)
+        if(strcmp(arr[i], str)==0)
+            return (int)i;
+    return -1;
+}
+
+static void append_string(char ***arr, size_t *len, const char *s){
+    char **tmp = realloc(*arr, (*len + 1) * sizeof(char*));
+    if(!tmp){
+        fprintf(stderr, "\nОшибка: не удалось выделить память\n");
+        exit(EXIT_FAILURE);
+    }
+    *arr = tmp;
+    (*arr)[*len] = strdup(s);
+    if(!(*arr)[*len]){
+        fprintf(stderr, "\nОшибка: не удалось скопировать сторку\n");
+        exit(EXIT_FAILURE);
+    }
+    (*len)++;
+}
+
+void apply_logic(const char *dir, bool A, bool O, bool N){
+    if(global_maches_len == 0)
+        return;
+
+    /* gather unique paths and count occurrences */
+    char **uniq = NULL;
+    size_t *counts = NULL;
+    size_t uniq_len = 0;
+    for(size_t i=0;i<global_maches_len;i++){
+        int idx = str_in_array(uniq, uniq_len, global_maches[i]);
+        if(idx >= 0){
+            counts[idx]++;
+        } else {
+            char **utmp = realloc(uniq, (uniq_len+1)*sizeof(char*));
+            size_t *ctmp = realloc(counts, (uniq_len+1)*sizeof(size_t));
+            if(!utmp || !ctmp){
+                fprintf(stderr, "\nОшибка: не удалось выделить память\n");
+                exit(EXIT_FAILURE);
+            }
+            uniq = utmp;
+            counts = ctmp;
+            uniq[uniq_len] = global_maches[i];
+            counts[uniq_len] = 1;
+            uniq_len++;
+        }
+    }
+
+    char **result = NULL;
+    size_t result_len = 0;
+
+    if(A && plugins_used > 1){
+        for(size_t i=0;i<uniq_len;i++)
+            if(counts[i] == plugins_used)
+                append_string(&result, &result_len, uniq[i]);
+    } else {
+        for(size_t i=0;i<uniq_len;i++)
+            append_string(&result, &result_len, uniq[i]);
+    }
+
+    if(N){
+        char **neg = NULL;
+        size_t neg_len = 0;
+        FTS *ftsp;
+        FTSENT *ent;
+        char *paths[] = {(char*)dir, NULL};
+        ftsp = fts_open(paths, FTS_NOCHDIR | FTS_PHYSICAL, NULL);
+        if(ftsp){
+            while((ent = fts_read(ftsp)) != NULL){
+                if(ent->fts_info == FTS_F){
+                    if(str_in_array(result, result_len, ent->fts_path) < 0)
+                        append_string(&neg, &neg_len, ent->fts_path);
+                }
+            }
+            fts_close(ftsp);
+        }
+        for(size_t i=0;i<result_len;i++)
+            free(result[i]);
+        free(result);
+        result = neg;
+        result_len = neg_len;
+    }
+
+    /* free old matches */
+    for(size_t i=0;i<global_maches_len;i++)
+        free(global_maches[i]);
+    free(global_maches);
+    global_maches = result;
+    global_maches_len = result_len;
+    free(uniq);
+    free(counts);
 }
 
 
@@ -98,21 +196,7 @@ void print_standart_message(char flag){
 
 }
 
-int yes_or_no(const char *input) {
-    enum { BUF_SIZE = 16 };
-    char buf[BUF_SIZE];
 
-    printf("%s [y/N]: ", input);
-    if (!fgets(buf, BUF_SIZE, stdin))
-        return 0;
-
-    if (!strchr(buf, '\n')) {
-        int c;
-        while ((c = getchar()) != '\n' && c != EOF);
-    }
-
-    return (buf[0] == 'y' || buf[0] == 'Y');
-}
 
 bool is_it_so_lib(const char *path) {
     // 1) Найдём имя файла (после последнего '/' )
@@ -206,31 +290,7 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
     }
 }
 
-void add_string_to_global(const char *new_string)
-{
-    // Расширяем массив на один элемент
-    char **temp = realloc(global_maches, (global_maches_len + 1) * sizeof(char *));
-
-    if (temp == NULL)
-    {
-        fprintf(stderr, "\nОшибка: не удалось выделить память\n");
-        exit(EXIT_FAILURE);
-    }
-    global_maches = temp;
-
-    // Создаем копию строки и сохраняем её в новом элементе массива
-    global_maches[global_maches_len] = strdup(new_string);
-    if (global_maches[global_maches_len] == NULL)
-    {
-        fprintf(stderr, "\nОшибка: не удалось скопировать сторку\n");
-        exit(EXIT_FAILURE);
-    }
-
-    // Увеличиваем счетчик строк
-    global_maches_len++;
-}
-
-int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag){ //TODO Need to fix parsing options
+int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag){
     switch (typeflag) {
         case FTW_D:
             return 0;
@@ -313,6 +373,13 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                 }
             }
 
+            char **argv_copy = calloc(f_argc + 1, sizeof(char*));
+            if(!argv_copy){
+                print_error_message("calloc() failed\nn");
+                goto END;
+            }
+            memcpy(argv_copy, f_argv, f_argc * sizeof(char*));
+
             optind = 1;
             int saved_opterr = opterr;
             opterr = 0;
@@ -321,10 +388,10 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                 if(DEBUG){
                     printf("\nDebug: f_argc = %d", f_argc);
                     for (int i = 0; i < f_argc; i++){
-                        printf("\t f_argv[%d] = %s\n", i, f_argv[i]);
+                        printf("\t f_argv[%d] = %s\n", i, argv_copy[i]);
                     }
                 }
-                ret = getopt_long(f_argc, f_argv, "", longopts, &opt_ind);
+                ret = getopt_long(f_argc, argv_copy, "+", longopts, &opt_ind);
                 if (ret == -1) break;
 
                 if (ret == '?')
@@ -399,11 +466,17 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                     if (ret > 0)
                         continue;
 
-                    if (ret == 0){
-                        add_string_to_global(entry->fts_path);
+                    if (ret == 0) {
+                        append_string(&global_maches, &global_maches_len,
+                                      entry->fts_path);
                     }
                 }
             }
+
+            if(ftsp)
+                fts_close(ftsp);
+
+            plugins_used++;
 
 
 
@@ -413,6 +486,8 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                     free( (opts_to_pass + i)->flag );
                 free(opts_to_pass);
             }
+            if(argv_copy)
+                free(argv_copy);
             if (longopts) free(longopts);
             if (lib_name) free(lib_name);
             //if (file_name) free(file_name);

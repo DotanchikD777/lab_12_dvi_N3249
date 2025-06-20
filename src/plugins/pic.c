@@ -118,10 +118,10 @@ int plugin_process_file(const char *fname, struct option in_opts[], size_t in_op
         }
     }
 
-    int *flags = parse_extensions((const char*)in_opts[in_opts_len].flag);
+    int *flags = parse_extensions((const char*)in_opts[0].flag);
     if (!flags || (flags[0] == -1)) {
         if(DEBUG)
-            printf("DEBUG: %s: bad argument: %s", d_lib_name, (char*)in_opts[in_opts_len].flag);
+            printf("DEBUG: %s: bad argument: %s", d_lib_name, (char*)in_opts[0].flag);
         free(flags);
         return -1;
     }
