@@ -391,6 +391,8 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                         printf("\t f_argv[%d] = %s\n", i, argv_copy[i]);
                     }
                 }
+
+                int option_start = optind;
                 ret = getopt_long(f_argc, argv_copy, "+", longopts, &opt_ind);
                 if (ret == -1) break;
 
@@ -403,15 +405,16 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                 }
 
                 #ifndef ALLOW_OPT_ABBREV
-                // glibc quirk: no proper way to disable option abbreviations
-                // https://stackoverflow.com/questions/5182041/turn-off-abbreviation-in-getopt-long-optarg-h
-                int idx = (longopts + opt_ind)->has_arg ? 2 : 1;
-                const char *actual_opt_name = f_argv[optind - idx] + 2; // +2 for -- before option
-                const char *found_opt_name = (longopts + opt_ind)->name;
-                if (strcmp(actual_opt_name, found_opt_name)) {
-                    // It's probably abbreviated name, which we do not allow
-                    fprintf(stderr, "ERROR: unknown option: %s\n", f_argv[optind - idx]);
-                    goto END;
+                const char *typed = argv_copy[option_start];
+                if (typed && strncmp(typed, "--", 2) == 0) {
+                    typed += 2;
+                    size_t typed_len = strcspn(typed, "=");
+                    if (strncmp(typed, (longopts + opt_ind)->name, typed_len) != 0 ||
+                        (longopts + opt_ind)->name[typed_len] != '\0') {
+                        fprintf(stderr, "ERROR: unknown option: %s\n",
+                                argv_copy[option_start]);
+                        goto END;
+                    }
                 }
                 #endif
 

@@ -7,12 +7,12 @@
 #include "../include/plugin_api.h"
 
 static struct option long_options_img[] = {
-        {"P",   required_argument,  0,    'P'},
-        {"A",   no_argument,        0,    'A'},
-        {"O",   no_argument,        0,    'O'},
-        {"N",   no_argument,        0,    'N'},
-        {"help",   no_argument,     0,    'h'},
-        {"version",   no_argument,  0,    'v'},
+        {"plugins-dir", required_argument,  0, 'P'},
+        {"and",         no_argument,       0, 'A'},
+        {"or",          no_argument,       0, 'O'},
+        {"not",         no_argument,       0, 'N'},
+        {"help",        no_argument,       0, 'h'},
+        {"version",     no_argument,       0, 'v'},
 };
 
 char * get_p_dir(int argc, char **argv){
