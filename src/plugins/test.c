@@ -10,7 +10,7 @@
 
 static char *d_lib_name = "libtest.so";
 
-static char *d_plugin_purpose = "Check if the file contains an image";
+static char *d_plugin_purpose = "Search for a text substring inside file";
 
 static char *d_plugin_author = "Ilchuk Denis";
 
@@ -45,6 +45,31 @@ int plugin_get_info(struct plugin_info* ppi) {
 }
 
 int plugin_process_file(const char *fname, struct option in_opts[], size_t in_opts_len) {
-    printf("\nTEST!!!\n");
-    return 0;
+    bool DEBUG = getenv("LAB12DEBUG") != NULL;
+
+    if(!fname || !in_opts || in_opts_len == 0){
+        errno = EINVAL;
+        return -1;
+    }
+
+    const char *needle = (const char*)in_opts[0].flag;
+    if(!needle)
+        return -1;
+
+    FILE *f = fopen(fname, "r");
+    if(!f)
+        return -1;
+
+    char *line = NULL;
+    size_t n = 0;
+    int res = 1;
+    while(getline(&line, &n, f) != -1){
+        if(strstr(line, needle)){
+            res = 0;
+            break;
+        }
+    }
+    free(line);
+    fclose(f);
+    return res;
 }

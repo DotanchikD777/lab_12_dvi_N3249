@@ -37,6 +37,7 @@ extern int opt_used_counter[6];
 
 extern char **global_maches;
 extern size_t global_maches_len;
+extern size_t plugins_used;
 //Functions
 
 void opt_errors(void);
@@ -48,8 +49,6 @@ void print_standart_message(char flag);
 void punish_dummy_user(const char *err_msg);
 
 void print_error_message(const char *err_msg);
-
-int yes_or_no(const char *input);
 
 int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib(const char *fpath, const struct stat *sb, int typeflag);
 
@@ -65,7 +64,9 @@ struct option* get_all_options(char *plugin_dir_path, size_t *count);
 
 bool is_it_so_lib(const char *path);
 
-char * get_p_dir(int argc, char **argv);
+char* get_p_dir(int argc, char **argv);
 
-void add_string_to_global(const char *new_string);
+void print_maches(void);
+
+void apply_logic(const char *dir, bool A, bool N);
 #endif

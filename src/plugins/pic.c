@@ -55,10 +55,10 @@ int *parse_extensions(const char *str) {
     char *token = strtok(buf, ",");
     while (token) {
         int idx = -1;
-        if (strcmp(token, "<png>") == 0) idx = PNG;
-        else if (strcmp(token, "<jpg>") == 0) idx = JPG;
-        else if (strcmp(token, "<bmp>") == 0) idx = BMP;
-        else if (strcmp(token, "<gif>") == 0) idx = GIF;
+        if (strcmp(token, "png") == 0) idx = PNG;
+        else if (strcmp(token, "jpg") == 0) idx = JPG;
+        else if (strcmp(token, "bmp") == 0) idx = BMP;
+        else if (strcmp(token, "gif") == 0) idx = GIF;
 
         // если токен не из ожидаемого списка или дубль — ошибка
         if (idx < 0 || flags[idx] == 1) {
@@ -84,7 +84,8 @@ int *parse_extensions(const char *str) {
 }
 
 
-int plugin_get_info(struct plugin_info* ppi) {
+int
+plugin_get_info(struct plugin_info* ppi) {
     if (!ppi) {
         fprintf(stderr, "ERROR: in plugin %s: invalid argument\n", d_lib_name);
         return -1;
@@ -117,10 +118,10 @@ int plugin_process_file(const char *fname, struct option in_opts[], size_t in_op
         }
     }
 
-    int *flags = parse_extensions((const char*)in_opts[in_opts_len].flag);
+    int *flags = parse_extensions((const char*)in_opts[0].flag);
     if (!flags || (flags[0] == -1)) {
         if(DEBUG)
-            printf("DEBUG: %s: bad argument: %s", d_lib_name, (char*)in_opts[in_opts_len].flag);
+            printf("DEBUG: %s: bad argument: %s", d_lib_name, (char*)in_opts[0].flag);
         free(flags);
         return -1;
     }

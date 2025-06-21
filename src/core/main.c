@@ -140,20 +140,21 @@ int main(int argc, char *argv[]){
         if (ftw(P_dir, scan_dir_via_dynamic_lib_or_libs_for_matches, 10) == -1)
             print_error_message("ftw");
 
+        apply_logic(dir_to_scan, A_flag, N_flag);
 
 
-
+        print_maches();
 
 
 
         for (size_t i = 0; i < global_maches_len; i++)
-        {
             free(global_maches[i]);
-        }
-
         free(global_maches);
         global_maches = NULL;
         global_maches_len = 0;
+        for (size_t i = 0; i < count_opt; i++)
+            if (i >= 6 && long_options[i].name)
+                free((char*)long_options[i].name);
         free(long_options);
         return EXIT_SUCCESS;
     }
