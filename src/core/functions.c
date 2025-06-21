@@ -6,7 +6,6 @@
 #include "../include/plugin_api.h"
 
 
-
 int f_argc = 0;
 char **f_argv = NULL;
 static bool DEBUG;
@@ -15,7 +14,7 @@ char *dir_for_scan;
 size_t plugins_used = 0;
 
 
-void get_terminal_arguments_from_main_to_functions (int argc, char *argv[], char *dir_for_scan_path){
+void get_terminal_arguments_from_main_to_functions(int argc, char *argv[], char *dir_for_scan_path) {
     f_argc = argc;
     f_argv = argv;
     dir_for_scan = dir_for_scan_path;
@@ -23,13 +22,13 @@ void get_terminal_arguments_from_main_to_functions (int argc, char *argv[], char
         printf("\nDEBUG: get command args to functions file\n");
 }
 
-void get_debug_status_mode_functions (bool flag){
-    if(flag)
+void get_debug_status_mode_functions(bool flag) {
+    if (flag)
         DEBUG = true;
 }
 
 
-bool is_directory(const char *path){
+bool is_directory(const char *path) {
     struct stat sb;
 
     if (stat(path, &sb) != 0)
@@ -39,42 +38,42 @@ bool is_directory(const char *path){
 }
 
 
-static int str_in_array(char **arr, size_t len, const char *str){ // find index of string in massive
-    for(size_t i=0;i<len;i++)
-        if(strcmp(arr[i], str)==0)
-            return (int)i;
+static int str_in_array(char **arr, size_t len, const char *str) { // find index of string in massive
+    for (size_t i = 0; i < len; i++)
+        if (strcmp(arr[i], str) == 0)
+            return (int) i;
     return -1;
 }
 
-static void append_string(char ***arr, size_t *len, const char *s){ // append path to global valid file massive
-    char **tmp = realloc(*arr, (*len + 1) * sizeof(char*));
-    if(!tmp)
+static void append_string(char ***arr, size_t *len, const char *s) { // append path to global valid file massive
+    char **tmp = realloc(*arr, (*len + 1) * sizeof(char *));
+    if (!tmp)
         print_error_message("can`t allocate memory");
 
     *arr = tmp;
     (*arr)[*len] = strdup(s);
-    if(!(*arr)[*len])
+    if (!(*arr)[*len])
         print_error_message("can`t copy string (strdup)");
 
     (*len)++;
 }
 
-void apply_logic(const char *dir, bool A, bool N){
-    if(global_matches_len == 0)
+void apply_logic(const char *dir, bool A, bool N) {
+    if (global_matches_len == 0)
         return;
 
     /* gather unique paths and count occurrences */
     char **uniq = NULL;
     size_t *counts = NULL;
     size_t uniq_len = 0;
-    for(size_t i=0; i < global_matches_len; i++){
+    for (size_t i = 0; i < global_matches_len; i++) {
         int idx = str_in_array(uniq, uniq_len, global_matches[i]);
-        if(idx >= 0){
+        if (idx >= 0) {
             counts[idx]++;
-        } else{
-            char **utmp = realloc(uniq, (uniq_len+1)*sizeof(char*));
-            size_t *ctmp = realloc(counts, (uniq_len+1)*sizeof(size_t));
-            if(!utmp || !ctmp)
+        } else {
+            char **utmp = realloc(uniq, (uniq_len + 1) * sizeof(char *));
+            size_t *ctmp = realloc(counts, (uniq_len + 1) * sizeof(size_t));
+            if (!utmp || !ctmp)
                 print_error_message("can`t reallocate memory");
             uniq = utmp;
             counts = ctmp;
@@ -87,32 +86,32 @@ void apply_logic(const char *dir, bool A, bool N){
     char **result = NULL;
     size_t result_len = 0;
 
-    if(A && plugins_used > 1){
-        for(size_t i=0;i<uniq_len;i++)
-            if(counts[i] == plugins_used)
+    if (A && plugins_used > 1) {
+        for (size_t i = 0; i < uniq_len; i++)
+            if (counts[i] == plugins_used)
                 append_string(&result, &result_len, uniq[i]);
-    } else{
-        for(size_t i=0;i<uniq_len;i++)
+    } else {
+        for (size_t i = 0; i < uniq_len; i++)
             append_string(&result, &result_len, uniq[i]);
     }
 
-    if(N){
+    if (N) {
         char **neg = NULL;
         size_t neg_len = 0;
         FTS *ftsp;
         FTSENT *ent;
-        char *paths[] = {(char*)dir, NULL};
+        char *paths[] = {(char *) dir, NULL};
         ftsp = fts_open(paths, FTS_NOCHDIR | FTS_PHYSICAL, NULL);
-        if(ftsp){
-            while((ent = fts_read(ftsp)) != NULL){
-                if(ent->fts_info == FTS_F){
-                    if(str_in_array(result, result_len, ent->fts_path) < 0)
+        if (ftsp) {
+            while ((ent = fts_read(ftsp)) != NULL) {
+                if (ent->fts_info == FTS_F) {
+                    if (str_in_array(result, result_len, ent->fts_path) < 0)
                         append_string(&neg, &neg_len, ent->fts_path);
                 }
             }
             fts_close(ftsp);
         }
-        for(size_t i=0;i<result_len;i++)
+        for (size_t i = 0; i < result_len; i++)
             free(result[i]);
         free(result);
         result = neg;
@@ -120,7 +119,7 @@ void apply_logic(const char *dir, bool A, bool N){
     }
 
     /* free old matches */
-    for(size_t i=0; i < global_matches_len; i++)
+    for (size_t i = 0; i < global_matches_len; i++)
         free(global_matches[i]);
     free(global_matches);
     global_matches = result;
@@ -130,11 +129,10 @@ void apply_logic(const char *dir, bool A, bool N){
 }
 
 
-
-void print_standart_message(char flag){
+void print_standart_message(char flag) {
     switch (flag) {
         case 'h':
-            printf("\n%s\n",STRIPE);
+            printf("\n%s\n", STRIPE);
             printf(
                     "Usage: lab11dviN3249 [OPTIONS] [DIRECTORY]\n"
                     "Perform a recursive file search starting from DIRECTORY (defaults to current working directory),\n"
@@ -172,11 +170,11 @@ void print_standart_message(char flag){
                     "Version:\n"
                     "  0.5 (18 March 2025)\n"
             );
-            printf("\n%s\n",STRIPE);
+            printf("\n%s\n", STRIPE);
             break;
         case 'v':
             printf("\n%s\nCreated by: %s\nGroup: %s\nVariant: %s\n%s\n",
-                             STRIPE,         NAME,      GR,          VR, STRIPE);
+                   STRIPE, NAME, GR, VR, STRIPE);
             break;
         default:
 
@@ -186,10 +184,10 @@ void print_standart_message(char flag){
 
 }
 
-bool is_it_so_lib(const char *path){ // check *lib.so mask match filename
+bool is_it_so_lib(const char *path) { // check *lib.so mask match filename
     const char *name = strrchr(path, '/');
     if (name) name++;
-    else      name = path;
+    else name = path;
 
     size_t len = strlen(name);
     if (len < 3 + 3)
@@ -198,14 +196,16 @@ bool is_it_so_lib(const char *path){ // check *lib.so mask match filename
     if (name[0] != 'l' || name[1] != 'i' || name[2] != 'b')
         return false;
 
-    if (name[len-3] != '.' || name[len-2] != 's' || name[len-1] != 'o')
+    if (name[len - 3] != '.' || name[len - 2] != 's' || name[len - 1] != 'o')
         return false;
 
     return true;
 }
 
-int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib(const char *fpath, const struct stat *sb, int typeflag){
-    switch (typeflag){
+int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib(const char *fpath,
+                                                                                     const struct stat *sb,
+                                                                                     int typeflag) {
+    switch (typeflag) {
         case FTW_D:
             return 0;
         case FTW_F:
@@ -219,23 +219,23 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
             dlerror();
             void *dl = dlopen(lib_name, RTLD_LAZY);
 
-            if (!dl){
+            if (!dl) {
                 fprintf(stderr, "ERROR: dlopen() in %s failed: %s\n", lib_name, dlerror());
                 goto END;
             }
 
             void *func = dlsym(dl, "plugin_get_info");
 
-            if (!func){
+            if (!func) {
                 fprintf(stderr, "ERROR: dlsym() for %s failed: %s\n", lib_name, dlerror());
                 goto END;
             }
 
-            typedef int (*pgi_func_t)(struct plugin_info*);
-            pgi_func_t pgi_func = (pgi_func_t)func;
+            typedef int (*pgi_func_t)(struct plugin_info *);
+            pgi_func_t pgi_func = (pgi_func_t) func;
 
             int ret = pgi_func(&pi);
-            if (ret < 0){
+            if (ret < 0) {
                 fprintf(stderr, "ERROR: plugin_get_info()  for %s failed\n", lib_name);
                 goto END;
             }
@@ -245,12 +245,12 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
             printf("Plugin purpose:\t\t%s\n", pi.plugin_purpose);
             printf("Plugin author:\t\t%s\n", pi.plugin_author);
             printf("Supported options: ");
-            if (pi.sup_opts_len > 0){
+            if (pi.sup_opts_len > 0) {
                 printf("\n");
-                for (size_t i = 0; i < pi.sup_opts_len; i++){
+                for (size_t i = 0; i < pi.sup_opts_len; i++) {
                     printf("\t--%s\t\t%s\n", pi.sup_opts[i].opt.name, pi.sup_opts[i].opt_descr);
                 }
-            } else{
+            } else {
                 printf("none (!?)\n");
             }
             if (pi.sup_opts_len == 0)
@@ -258,7 +258,7 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
 
             printf("\n%s\n", STRIPE_SMALL);
 
-            END:
+        END:
             if (lib_name) free(lib_name);
             if (dl) dlclose(dl);
             return 0;
@@ -267,8 +267,8 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
     }
 }
 
-int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag){
-    switch (typeflag){
+int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag) {
+    switch (typeflag) {
         case FTW_D:
             return 0;
         case FTW_F:
@@ -286,23 +286,23 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
             dlerror();
             void *dl = dlopen(lib_name, RTLD_LAZY);
 
-            if (!dl){
+            if (!dl) {
                 fprintf(stderr, "ERROR: dlopen() in %s failed: %s\n", lib_name, dlerror());
                 goto END;
             }
 
             void *func = dlsym(dl, "plugin_get_info");
 
-            if (!func){
+            if (!func) {
                 fprintf(stderr, "ERROR: dlsym() for %s failed: %s\n", lib_name, dlerror());
                 goto END;
             }
 
-            typedef int (*pgi_func_t)(struct plugin_info*);
-            pgi_func_t pgi_func = (pgi_func_t)func;
+            typedef int (*pgi_func_t)(struct plugin_info *);
+            pgi_func_t pgi_func = (pgi_func_t) func;
 
             int ret = pgi_func(&pi);
-            if (ret < 0){
+            if (ret < 0) {
                 fprintf(stderr, "ERROR: plugin_get_info()  for %s failed\n", lib_name);
                 goto END;
             }
@@ -317,8 +317,8 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
             if (!func)
                 print_error_message("no plugin_process_file() function found");
 
-            typedef int (*ppf_func_t)(const char*, struct option*, size_t);
-            ppf_func_t ppf_func = (ppf_func_t)func;
+            typedef int (*ppf_func_t)(const char *, struct option *, size_t);
+            ppf_func_t ppf_func = (ppf_func_t) func;
 
             longopts = calloc(pi.sup_opts_len + 1, sizeof(struct option));
             if (!longopts)
@@ -335,20 +335,20 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
             if (DEBUG)
                 for (size_t i = 0; i < pi.sup_opts_len; i++)
                     fprintf(stderr, "DEBUG: to getopt(): passing option '%s'\n",
-                                                                        (longopts + i)->name);
+                            (longopts + i)->name);
 
-            char **argv_copy = calloc(f_argc + 1, sizeof(char*));
-            if(!argv_copy)
+            char **argv_copy = calloc(f_argc + 1, sizeof(char *));
+            if (!argv_copy)
                 print_error_message("can`t allocate memory");
 
-            memcpy(argv_copy, f_argv, f_argc * sizeof(char*));
+            memcpy(argv_copy, f_argv, f_argc * sizeof(char *));
 
             optind = 1;
             int saved_opterr = opterr;
             opterr = 0;
-            while (1){
+            while (1) {
                 int opt_ind = 0;
-                if(DEBUG){
+                if (DEBUG) {
                     printf("\nDEBUG: f_argc = %d", f_argc);
                     for (int i = 0; i < f_argc; i++)
                         printf("\t f_argv[%d] = %s\n", i, argv_copy[i]);
@@ -364,9 +364,9 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                 if (ret != 0)
                     print_error_message("failed to parse options");
 
-                #ifndef ALLOW_OPT_ABBREV
+#ifndef ALLOW_OPT_ABBREV
                 const char *typed = argv_copy[option_start];
-                if (typed && strncmp(typed, "--", 2) == 0){
+                if (typed && strncmp(typed, "--", 2) == 0) {
                     typed += 2;
                     size_t typed_len = strcspn(typed, "=");
                     if (strncmp(typed, (longopts + opt_ind)->name, typed_len) != 0 ||
@@ -376,24 +376,24 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                         goto END;
                     }
                 }
-                #endif
+#endif
 
                 // Check how many options we got up to this moment
-                if ((size_t)opts_to_pass_len == pi.sup_opts_len)
+                if ((size_t) opts_to_pass_len == pi.sup_opts_len)
                     print_error_message("too many options!");
 
                 // Add this option to array of options actually passed to plugin_process_file()
                 memcpy(opts_to_pass + opts_to_pass_len, longopts + opt_ind, sizeof(struct option));
                 // Argument (if any) is passed in flag
-                if ((longopts + opt_ind)->has_arg){
+                if ((longopts + opt_ind)->has_arg) {
                     // Mind this!
                     // flag is of type int*, but we are passing char* here (it's ok to do so).
-                    (opts_to_pass + opts_to_pass_len)->flag = (int*)strdup(optarg);
+                    (opts_to_pass + opts_to_pass_len)->flag = (int *) strdup(optarg);
                 }
                 opts_to_pass_len++;
             }
             opterr = saved_opterr;
-            if (opts_to_pass_len == 0 )
+            if (opts_to_pass_len == 0)
                 goto END;
 
             if (DEBUG) {
@@ -401,10 +401,9 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                 for (int i = 0; i < opts_to_pass_len; i++) {
                     fprintf(stderr, "DEBUG: passing option '%s' with arg '%s'\n",
                             (opts_to_pass + i)->name,
-                            (char*)(opts_to_pass + i)->flag);
+                            (char *) (opts_to_pass + i)->flag);
                 }
             }
-
 
 
             FTS *ftsp;
@@ -416,8 +415,8 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
             if (!ftsp)
                 print_error_message("fts cant open directory");
 
-            while ((entry = fts_read(ftsp)) != NULL){
-                if (entry->fts_info == FTS_F){
+            while ((entry = fts_read(ftsp)) != NULL) {
+                if (entry->fts_info == FTS_F) {
                     errno = 0;
                     ret = ppf_func(entry->fts_path, opts_to_pass, opts_to_pass_len);
                     if (ret < 0)
@@ -432,15 +431,15 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                 }
             }
 
-            if(ftsp)
+            if (ftsp)
                 fts_close(ftsp);
 
             plugins_used++;
 
-            END:
+        END:
             if (opts_to_pass) {
                 for (int i = 0; i < opts_to_pass_len; i++)
-                    free( (opts_to_pass + i)->flag );
+                    free((opts_to_pass + i)->flag);
                 free(opts_to_pass);
             }
 

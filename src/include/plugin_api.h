@@ -34,7 +34,8 @@ struct plugin_info {
 };
 
 
-int plugin_get_info(struct plugin_info* ppi);
+int plugin_get_info(struct plugin_info *ppi);
+
 /*
     plugin_get_info()
 

@@ -27,10 +27,10 @@ static struct plugin_option pl_opt_arr[] = {
         },
 };
 
-static int pl_opt_arr_len = sizeof(pl_opt_arr)/sizeof(pl_opt_arr[0]);
+static int pl_opt_arr_len = sizeof(pl_opt_arr) / sizeof(pl_opt_arr[0]);
 
 
-int plugin_get_info(struct plugin_info* ppi) {
+int plugin_get_info(struct plugin_info *ppi) {
     if (!ppi) {
         fprintf(stderr, "ERROR: in plugin %s: invalid argument\n", d_lib_name);
         return -1;
@@ -45,24 +45,24 @@ int plugin_get_info(struct plugin_info* ppi) {
 }
 
 int plugin_process_file(const char *fname, struct option in_opts[], size_t in_opts_len) {
-    if(!fname || !in_opts || in_opts_len == 0){
+    if (!fname || !in_opts || in_opts_len == 0) {
         errno = EINVAL;
         return -1;
     }
 
-    const char *needle = (const char*)in_opts[0].flag;
-    if(!needle)
+    const char *needle = (const char *) in_opts[0].flag;
+    if (!needle)
         return -1;
 
     FILE *f = fopen(fname, "r");
-    if(!f)
+    if (!f)
         return -1;
 
     char *line = NULL;
     size_t n = 0;
     int res = 1;
-    while(getline(&line, &n, f) != -1){
-        if(strstr(line, needle)){
+    while (getline(&line, &n, f) != -1) {
+        if (strstr(line, needle)) {
             res = 0;
             break;
         }

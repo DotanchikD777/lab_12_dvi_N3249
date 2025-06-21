@@ -33,10 +33,10 @@
 
 //Globals
 
-extern int      opt_used_counter[6];
-extern char     **global_matches;
-extern size_t   global_matches_len;
-extern size_t   plugins_used;
+extern int opt_used_counter[6];
+extern char **global_matches;
+extern size_t global_matches_len;
+extern size_t plugins_used;
 //Functions
 
 void opt_errors(void);
@@ -49,23 +49,26 @@ void punish_dummy_user(const char *err_msg);
 
 void print_error_message(const char *err_msg);
 
-int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib(const char *fpath, const struct stat *sb, int typeflag);
+int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib(const char *fpath,
+                                                                                     const struct stat *sb,
+                                                                                     int typeflag);
 
-void get_terminal_arguments_from_main_to_functions (int argc, char *argv[], char *dir_with_libs);
+void get_terminal_arguments_from_main_to_functions(int argc, char *argv[], char *dir_with_libs);
 
 bool is_directory(const char *path);
 
-void get_debug_status_mode_functions (bool flag);
+void get_debug_status_mode_functions(bool flag);
 
 int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag);
 
-struct option* get_all_options(char *plugin_dir_path, size_t *count);
+struct option *get_all_options(char *plugin_dir_path, size_t *count);
 
 bool is_it_so_lib(const char *path);
 
-char* get_p_dir(int argc, char **argv);
+char *get_p_dir(int argc, char **argv);
 
 void print_matches(void);
 
 void apply_logic(const char *dir, bool A, bool N);
+
 #endif

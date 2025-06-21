@@ -1,32 +1,30 @@
 #include "../include/inc.h"
 
 
-
-
 static bool DEBUG;
 int opt_used_counter[6];
 
-void get_debug_status_mode_error_handlers(bool flag){
-    if(flag){
+void get_debug_status_mode_error_handlers(bool flag) {
+    if (flag) {
         DEBUG = true;
     }
 }
 
-void opt_errors(void){
+void opt_errors(void) {
     for (int i = 0; i < 6; i++) //too much usage of options
-        if(opt_used_counter[i] > 1){
+        if (opt_used_counter[i] > 1) {
             print_error_message("option abuse");
             exit(EXIT_FAILURE);
         }
 
-    if(opt_used_counter[A_USED] && opt_used_counter[O_USED])
+    if (opt_used_counter[A_USED] && opt_used_counter[O_USED])
         punish_dummy_user("A and O option usage");
 
-    if(DEBUG)
+    if (DEBUG)
         printf("\nDEBUG: Options passed without errors\n");
 }
 
-void punish_dummy_user(const char *err_msg){
+void punish_dummy_user(const char *err_msg) {
     const char *taunts[] = {
             "Oh, brilliant. Did you really think that would work?",
             "Thanks for demonstrating what \033[1;31mNOT\033[0m to do.",
@@ -46,7 +44,7 @@ void punish_dummy_user(const char *err_msg){
     exit(EXIT_FAILURE);
 }
 
-void print_error_message(const char *err_msg){
+void print_error_message(const char *err_msg) {
     fprintf(stderr, "\n%s\nError: %s\n%s\n", STRIPE_SMALL, err_msg, STRIPE);
     exit(EXIT_FAILURE);
 }
