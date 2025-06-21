@@ -68,7 +68,7 @@ bool is_it_so_lib(const char *path);
 
 char * get_p_dir(int argc, char **argv);
 
-void print_matches_tree(void);
+void print_maches(void);
 
 void apply_logic(const char *dir, bool A, bool O, bool N);
 #endif
