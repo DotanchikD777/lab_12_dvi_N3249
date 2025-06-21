@@ -59,6 +59,7 @@ static void add_long_option(struct option **opts_ptr, size_t *count_ptr, struct 
 
     // ставим завершающий {0,0,0,0}
     (*opts_ptr)[new_count] = (struct option){ 0, 0, 0, 0 };
+
 }
 
 struct option* get_all_options(char *plugin_dir_path, size_t *count){
