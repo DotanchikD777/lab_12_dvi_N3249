@@ -31,20 +31,13 @@ static struct plugin_option pl_opt_arr[] = {
 
 static int pl_opt_arr_len = sizeof(pl_opt_arr)/sizeof(pl_opt_arr[0]);
 
-
-
-// Парсит строку str, возвращает указатель на массив из 4 флагов.
-// В порядке: [png, jpg, bmp, gif].
-// При ошибке (пустой ввод, неизвестный токен, дубль, слишком много/мало) — все флаги = -1.
-int *parse_extensions(const char *str) {
+int *parse_extensions(const char *str){ // check argument for errors
     if (str == NULL) return NULL;
 
-    // Массив флагов инициализируем нулями
     int *flags = malloc(4 * sizeof(int));
     if (!flags) return NULL;
     for (int i = 0; i < 4; i++) flags[i] = 0;
 
-    // Копируем строку во временный буфер, т.к. strtok его изменяет
     char *buf = strdup(str);
     if (!buf) {
         free(flags);
@@ -60,9 +53,7 @@ int *parse_extensions(const char *str) {
         else if (strcmp(token, "bmp") == 0) idx = BMP;
         else if (strcmp(token, "gif") == 0) idx = GIF;
 
-        // если токен не из ожидаемого списка или дубль — ошибка
-        if (idx < 0 || flags[idx] == 1) {
-            // помечаем ошибку
+        if (idx < 0 || flags[idx] == 1){ // catching errors
             flags[0] = -1;
             free(buf);
             return flags;
@@ -75,10 +66,9 @@ int *parse_extensions(const char *str) {
 
     free(buf);
 
-    // проверяем общее количество найденных расширений
-    if (count < 1 || count > 4) {
+    // check arg quantity
+    if (count < 1 || count > 4)
         flags[0] = -1;
-    }
 
     return flags;
 }
@@ -86,7 +76,7 @@ int *parse_extensions(const char *str) {
 
 int
 plugin_get_info(struct plugin_info* ppi) {
-    if (!ppi) {
+    if (!ppi){
         fprintf(stderr, "ERROR: in plugin %s: invalid argument\n", d_lib_name);
         return -1;
     }
@@ -105,21 +95,20 @@ int plugin_process_file(const char *fname, struct option in_opts[], size_t in_op
     bool DEBUG = getenv("LAB12DEBUG") != NULL;
 
 
-    if (!fname || !in_opts || !in_opts_len) {
+    if (!fname || !in_opts || !in_opts_len){
         errno = EINVAL;
         return -1;
     }
 
-    if (DEBUG) {
+    if (DEBUG){
         printf("\nDEBUG: %s: Processing file %s\n", d_lib_name, fname);
-        for (size_t i = 0; i < in_opts_len; i++) {
+        for (size_t i = 0; i < in_opts_len; i++)
             fprintf(stderr, "DEBUG: %s: Got option '%s' with arg '%s'\n",
                     d_lib_name, in_opts[i].name, (char*)in_opts[i].flag);
-        }
     }
 
     int *flags = parse_extensions((const char*)in_opts[0].flag);
-    if (!flags || (flags[0] == -1)) {
+    if (!flags || (flags[0] == -1)){
         if(DEBUG)
             printf("DEBUG: %s: bad argument: %s", d_lib_name, (char*)in_opts[0].flag);
         free(flags);
@@ -129,7 +118,7 @@ int plugin_process_file(const char *fname, struct option in_opts[], size_t in_op
 
     unsigned char hdr[8];
     FILE *f = fopen(fname, "rb");
-    if (!f) {
+    if (!f){
         if(DEBUG)
             printf("DEBUG: %s: cant open file: %s", d_lib_name, fname);
         free(flags);
@@ -138,43 +127,38 @@ int plugin_process_file(const char *fname, struct option in_opts[], size_t in_op
 
     size_t n = fread(hdr, 1, sizeof(hdr), f);
     fclose(f);
-    if (n < 2) {
-        // слишком мало данных для определения
+    if (n < 2) // too small file
         return -1;
-    }
 
-    // 0: PNG — первые 8 байт = 89 50 4E 47 0D 0A 1A 0A
-    if (flags[PNG]) {
+    // 0: PNG - first 8 bytes = 89 50 4E 47 0D 0A 1A 0A
+    if (flags[PNG]){
         const unsigned char png_sig[8] = {0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A};
         if (n >= 8 && memcmp(hdr, png_sig, 8) == 0){
             free(flags);
-        return 0;
+            return 0;
         }
     }
 
-    // 1: JPG — первые два байта 0xFF 0xD8
-    if (flags[JPG]) {
+    // 1: JPG - first two bytes = 0xFF 0xD8
+    if (flags[JPG])
         if (hdr[0] == 0xFF && hdr[1] == 0xD8) {
             free(flags);
             return 0;
         }
-    }
 
-    // 2: BMP — первые два байта 'B' 'M'
-    if (flags[BMP]) {
+    // 2: BMP - first two bytes = 'B' 'M'
+    if (flags[BMP])
         if (hdr[0] == 'B' && hdr[1] == 'M'){
             free(flags);
             return 0;
         }
-    }
 
-    // 3: GIF — первые шесть байт "GIF87a" или "GIF89a"
-    if (flags[GIF]) {
+    // 3: GIF - six bytes =  "GIF87a" or "GIF89a"
+    if (flags[GIF])
         if (n >= 6 && (memcmp(hdr, "GIF87a", 6) == 0 || memcmp(hdr, "GIF89a", 6) == 0)){
             free(flags);
             return 0;
         }
-    }
 
     free(flags);
     return 1;

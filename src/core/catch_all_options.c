@@ -29,37 +29,28 @@ char * get_p_dir(int argc, char **argv){
 }
 
 
-static void add_long_option(struct option **opts_ptr, size_t *count_ptr, struct option newopt) {
-
+static void add_long_option(struct option **opts_ptr, size_t *count_ptr, struct option newopt){ // add element to options massive
     // check for duplicate names
-    for (size_t i = 0; i < *count_ptr; i++) {
-        if ((*opts_ptr)[i].name && newopt.name &&
-            strcmp((*opts_ptr)[i].name, newopt.name) == 0) {
+    for (size_t i = 0; i < *count_ptr; i++){
+        if ( (*opts_ptr)[i].name && newopt.name &&
+            strcmp( (*opts_ptr)[i].name, newopt.name ) == 0)
             print_error_message("duplicate option detected");
-        }
     }
-    // новое число «реальных» элементов:
     size_t old_count = *count_ptr;
     size_t new_count = old_count + 1;
 
-    // делаем realloc на (new_count + 1) записей:
-    // +1 — для завершающего {0,0,0,0}
+
     struct option *tmp = realloc(*opts_ptr, (new_count + 1) * sizeof(struct option));
-    if (!tmp) {
-        perror("realloc");
-        exit(EXIT_FAILURE);
-    }
+    if (!tmp)
+        print_error_message("can`t realloc memory");
+
     *opts_ptr = tmp;
 
-    // копируем newopt на позицию old_count
     (*opts_ptr)[old_count] = newopt;
 
-    // обновляем счётчик реальных элементов
     *count_ptr = new_count;
 
-    // ставим завершающий {0,0,0,0}
-    (*opts_ptr)[new_count] = (struct option){ 0, 0, 0, 0 };
-
+    (*opts_ptr)[new_count] = (struct option){ 0, 0, 0, 0 }; // ending element
 }
 
 struct option* get_all_options(char *plugin_dir_path, size_t *count){
@@ -69,70 +60,67 @@ struct option* get_all_options(char *plugin_dir_path, size_t *count){
 
     ftsp = fts_open(path_t, FTS_NOCHDIR | FTS_PHYSICAL, NULL);
 
-    if (!ftsp) {
-        print_error_message("fts_open");
-    }
+    if (!ftsp)
+        print_error_message("fts can`t open plugin directory");
 
     size_t count_core = 0;
     struct option *core_options = NULL;
 
-    for (int i = 0; i < 6; i++){
+    for (int i = 0; i < 6; i++) // add core options
         add_long_option(&core_options, &count_core, long_options_img[i]);
-    }
 
 
-    while ((entry = fts_read(ftsp)) != NULL) {
-        if (entry->fts_info == FTS_F) {
-            if (!is_it_so_lib(entry->fts_path))
-                continue;
+    while ((entry = fts_read(ftsp)) != NULL){ // scan dir and add options
+        if (entry->fts_info != FTS_F)
+            continue;
 
-            char *lib_name = strdup(entry->fts_path);
+        if (!is_it_so_lib(entry->fts_path))
+            continue;
 
-            struct plugin_info pi = {0};
+        char *lib_name = strdup(entry->fts_path);
 
-            dlerror();
-            void *dl = dlopen(lib_name, RTLD_LAZY);
+        struct plugin_info pi = {0};
 
-            if (!dl) {
-                fprintf(stderr, "ERROR: dlopen() in %s failed: %s\n", lib_name, dlerror());
+        dlerror();
+        void *dl = dlopen(lib_name, RTLD_LAZY);
+
+        if (!dl){
+                fprintf(stderr, "Error: dlopen() in %s failed: %s\n", lib_name, dlerror());
                 goto END;
-            }
+        }
 
-            void *func = dlsym(dl, "plugin_get_info");
+        void *func = dlsym(dl, "plugin_get_info");
 
-            if (!func) {
-                fprintf(stderr, "ERROR: dlsym() for %s failed: %s\n", lib_name, dlerror());
+        if (!func){
+                fprintf(stderr, "Error: dlsym() for %s failed: %s\n", lib_name, dlerror());
                 goto END;
-            }
+        }
 
-            typedef int (*pgi_func_t)(struct plugin_info*);
-            pgi_func_t pgi_func = (pgi_func_t)func;
+        typedef int (*pgi_func_t)(struct plugin_info*);
+        pgi_func_t pgi_func = (pgi_func_t)func;
 
-            int ret = pgi_func(&pi);
-            if (ret < 0) {
-                fprintf(stderr, "ERROR: plugin_get_info()  for %s failed\n", lib_name);
+        int ret = pgi_func(&pi);
+        if (ret < 0){
+                fprintf(stderr, "Error: plugin_get_info()  for %s failed\n", lib_name);
                 goto END;
-            }
+        }
 
-            // Plugin info
-            if (pi.sup_opts_len > 0)
-                for (size_t i = 0; i < pi.sup_opts_len; i++) {
-                    struct option tmp = pi.sup_opts[i].opt;
-                    if (tmp.name)
-                        tmp.name = strdup(tmp.name);
-                    add_long_option(&core_options, &count_core, tmp);
-                }
-            else
+        // Plugin info
+        if (pi.sup_opts_len > 0)
+            for (size_t i = 0; i < pi.sup_opts_len; i++) {
+                struct option tmp = pi.sup_opts[i].opt;
+                if (tmp.name)
+                    tmp.name = strdup(tmp.name);
+                add_long_option(&core_options, &count_core, tmp);
+            } else
                 printf("none (!?)\n");
-            if (pi.sup_opts_len == 0) {
+
+            if (pi.sup_opts_len == 0)
                 print_error_message("library supports no options! How so?");
-                goto END;
-            }
 
             END:
             if (lib_name) free(lib_name);
             if (dl) dlclose(dl);
-        }
     }
 
     if (ftsp)

@@ -12,22 +12,18 @@ void get_debug_status_mode_error_handlers(bool flag){
     }
 }
 
-
 void opt_errors(void){
-    for (int i = 0; i < 6; i++){ //too much usage of options
+    for (int i = 0; i < 6; i++) //too much usage of options
         if(opt_used_counter[i] > 1){
-            printf("\nError: option abuse\n");
+            print_error_message("option abuse");
             exit(EXIT_FAILURE);
         }
-    }
 
-    if(opt_used_counter[A_USED] && opt_used_counter[O_USED]){
+    if(opt_used_counter[A_USED] && opt_used_counter[O_USED])
         punish_dummy_user("A and O option usage");
-    }
 
-    if(DEBUG){
-        printf("\nDebug: Options passed without errors\n");
-    }
+    if(DEBUG)
+        printf("\nDEBUG: Options passed without errors\n");
 }
 
 void punish_dummy_user(const char *err_msg){
@@ -38,7 +34,6 @@ void punish_dummy_user(const char *err_msg){
     };
     size_t n = sizeof(taunts) / sizeof(taunts[0]);
 
-    // Покрасим текст в красный (\033[1;31m … \033[0m)
     fprintf(stderr, "\033[1;31mError: %s\033[0m\n", err_msg);
 
     for (size_t i = 0; i < n; i++) {
@@ -47,16 +42,11 @@ void punish_dummy_user(const char *err_msg){
         sleep(3);                    // пауза 1 секунда
     }
 
-    // Финальное сообщение и выход
-    fprintf(stderr, "\033[1;31mTURN OFF THE PC!\033[0m It will be better for everyone.\n");
+    fprintf(stderr, "\n\033[1;31mTURN OFF THE PC!\033[0m It will be better for everyone.\n%s\n", STRIPE);
     exit(EXIT_FAILURE);
-
 }
 
 void print_error_message(const char *err_msg){
-
-    fprintf(stderr, "Error: %s\n", err_msg);
-
+    fprintf(stderr, "\n%s\nError: %s\n%s\n", STRIPE_SMALL, err_msg, STRIPE);
     exit(EXIT_FAILURE);
-
 }

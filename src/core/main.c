@@ -23,7 +23,7 @@ int main(int argc, char *argv[]){
     bool DEBUG = getenv("LAB12DEBUG") != NULL;
 
 
-    get_debug_status_mode_error_handlers(DEBUG); // send DEBUG state to eror handlers
+    get_debug_status_mode_error_handlers(DEBUG); // send DEBUG state to error handlers
     get_debug_status_mode_functions (DEBUG); // send DEBUG state to functions
 
     const char *optstring = "P:AONvh";
@@ -32,7 +32,7 @@ int main(int argc, char *argv[]){
     struct option *long_options = get_all_options(P_dir, &count_opt); // storage of all options from plugins and program
 
     while ((opt = getopt_long(argc, argv, optstring, long_options, &option_index)) != -1){ // option parsing
-        switch (opt) {
+        switch (opt){
             case 0:
                 /* plugin-specific option parsed */
                 break;
@@ -68,50 +68,49 @@ int main(int argc, char *argv[]){
                 break;
         }
         
-        if (DEBUG){
-            printf("Debug: opt='%c', A=%d, O=%d, N=%d, P=%s\n",
+        if (DEBUG)
+            printf("DEBUG: opt='%c', A=%d, O=%d, N=%d, P=%s\n",
                     (char)opt, A_flag, O_flag, N_flag, 
                     P_dir ? P_dir : "(none)" );
-        }
     }
 
     if(!opt_used_counter[O_USED] && !opt_used_counter[A_USED]){
         A_flag = true;
         if(DEBUG)
-            printf("\nDebug: default case --> A=%d\n", A_flag);
+            printf("\nDEBUG: default case --> A=%d\n", A_flag);
     }
 
     if (!P_dir){
         P_dir = "./lib/";
         if (DEBUG)
-            printf("\nDebug: default case --> P_dir=%s\n", P_dir);
+            printf("\nDEBUG: default case --> P_dir=%s\n", P_dir);
     }
 
     opt_errors();
 
-    if (DEBUG) {
+    if (DEBUG){
         printf("\nDEBUG: options count: %zu, P_dir = %s\n", count_opt, P_dir);
-        for (size_t i = 0; i < count_opt; i++) {
+        for (size_t i = 0; i < count_opt; i++){
             printf("\nDEBUG: cached option: %s\n", long_options[i].name);
         }
     }
 
 
 
-    if(argc - optind == 0) {
+    if(argc - optind == 0){
         printf("\n%s\n\t\tProgram started\n%s\n", STRIPE, STRIPE_SMALL);
 
         if(DEBUG)
-            printf("\nDebug: user provide no args\n");
+            printf("\nDEBUG: user provide no args\n");
 
-        if (ftw(P_dir, scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib, 10) == -1)
+        if (ftw(P_dir, scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib, 10) == -1) // just printing info for all available plugins
             print_error_message("ftw");
 
         printf("\n%s\nProgram has finished successful!\n%s\n",
                              STRIPE_SMALL,                               STRIPE);
         free(long_options);
         return EXIT_SUCCESS;
-    } else {
+    } else{
         printf("\n%s\n\t\tProgram started\n%s\n", STRIPE, STRIPE_SMALL);
 
 
@@ -128,7 +127,7 @@ int main(int argc, char *argv[]){
         char *dir_to_scan = argv[argc-1]; // last arg is dir to scan
 
         if (DEBUG)
-            printf("\nDebug: user provide %s dir to scan\n", dir_to_scan);
+            printf("\nDEBUG: user provide %s dir to scan\n", dir_to_scan);
 
 
 
@@ -137,12 +136,12 @@ int main(int argc, char *argv[]){
         if (ftw(P_dir, scan_dir_via_dynamic_lib_or_libs_for_matches, 10) == -1) // scan Plugins dir for plugins and
             print_error_message("ftw");                                                    //  scan dir to scan via every plugin
                                                                                                    // in Plugins dir
-
         apply_logic(dir_to_scan, A_flag, N_flag); // filter massive of valid files( plugin returned 0 for it) via bool logic
 
 
-        print_maches(); // print file tree
-
+        printf("\n%s\n\t\tResults:\n", STRIPE_SMALL);
+        print_matches(); // print file tree
+        printf("%s\n",STRIPE_SMALL);
 
         // free all memory
         for (size_t i = 0; i < global_matches_len; i++) // massive of valid files
@@ -152,6 +151,10 @@ int main(int argc, char *argv[]){
             if (i >= 6 && long_options[i].name) // first six options in .rodata
                 free((char*)long_options[i].name); // free options
         free(long_options); // free pointer to options
+
+        printf("\n%s\nProgram has finished successful!\n%s\n",
+               STRIPE_SMALL,                               STRIPE);
+
         return EXIT_SUCCESS;
     }
 }

@@ -4,20 +4,16 @@
 
 
 // Структура узла дерева
-typedef struct TreeNode 
+typedef struct TreeNode // node stuct
 {
     char *name;
-
     int is_dir; 
-    int is_exec; 
-    // Дети и их количество
-    struct TreeNode **children;
+    int is_exec;
+    struct TreeNode **children; // children
     size_t child_count;
 } TreeNode;
 
-// Функция создания нового узла
-static TreeNode* create_node(const char *name)
-{
+static TreeNode* create_node(const char *name){ // create new node
     TreeNode *node = (TreeNode *)malloc(sizeof(TreeNode));
     if (!node) return NULL;
 
@@ -29,62 +25,42 @@ static TreeNode* create_node(const char *name)
     return node;
 }
 
-// Функция для получения полного пути к файлу
-static char* build_full_path(char **segments, size_t count)
-{
-    // Пример: ["test_tree","dir2","readme.txt"] -> "/test_tree/dir2/readme.txt"
-
-    if (count == 0) 
-    {
+static char* build_full_path(char **segments, size_t count){ // build full path (can`t use sb struct)
+    // Example: ["test_tree","dir2","readme.txt"] -> "/test_tree/dir2/readme.txt"
+    if (count == 0)
         return strdup("");
-    }
 
 
     size_t total_len = 0;
-    for (size_t i = 0; i < count; i++) 
-    {
+    for (size_t i = 0; i < count; i++)
         total_len += strlen(segments[i]);
-    }
-    total_len += (count - 1); // под разделители
-    total_len += 1; // нулевой байт
+    total_len += (count - 1); // tabs
+    total_len += 1; // \0
 
     char *full_path = malloc(total_len);
     if (!full_path) return NULL;
     full_path[0] = '\0';
 
-    for (size_t i = 0; i < count; i++) 
-    {
+    for (size_t i = 0; i < count; i++){
         strcat(full_path, segments[i]);
-        if (i < count - 1) 
-        {
+        if (i < count - 1)
             strcat(full_path, "/");
-        }
     }
     return full_path;
 }
 
-// Поиск (или создание) дочернего узла по имени
-static TreeNode* find_or_create_child(TreeNode *parent, const char *child_name)
-{
-    // Сначала ищем
-    for (size_t i = 0; i < parent->child_count; i++) 
-    {
-        if (strcmp(parent->children[i]->name, child_name) == 0) 
-        {
+static TreeNode* find_or_create_child(TreeNode *parent, const char *child_name){ // add node to tree
+
+    for (size_t i = 0; i < parent->child_count; i++)
+        if (strcmp(parent->children[i]->name, child_name) == 0)
             return parent->children[i];
-        }
-    }
-    // Не найден: создаём
-    TreeNode *new_child = create_node(child_name);
+
+    TreeNode *new_child = create_node(child_name); // if cant find create child
     if (!new_child)
-    { 
         return NULL;
-    }
-    // Расширим массив children
+
     TreeNode **temp = realloc(parent->children, (parent->child_count + 1) * sizeof(TreeNode *));
-    if (!temp) 
-    {
-        // Если не удалось реаллок, почистим new_child
+    if (!temp){
         free(new_child->name);
         free(new_child);
         return NULL;
@@ -96,125 +72,76 @@ static TreeNode* find_or_create_child(TreeNode *parent, const char *child_name)
     return new_child;
 }
 
-// Добавить путь (разбитый на сегменты) в дерево
-static void insert_path_into_tree(TreeNode *root, char **segments, size_t count)
-{
+static void insert_path_into_tree(TreeNode *root, char **segments, size_t count){
     TreeNode *current = root;
-    for (size_t i = 0; i < count; i++) 
-    {
-        if (!segments[i] || strcmp(segments[i], "") == 0) 
-        {
-            continue; // пропускаем пустые сегменты 
-        }
-        // Вставляем/ищем ребёнка
+    for (size_t i = 0; i < count; i++){
+        if (!segments[i] || strcmp(segments[i], "") == 0)
+            continue;
+
         current = find_or_create_child(current, segments[i]);
-        // на последнем шаге считаем, что это файл, на промежуточных - каталог
-        if (i < count - 1) 
-        {
+        if (i < count - 1){
             current->is_dir = 1; 
             current->is_exec = 0;
-        } else 
-        {
-            // предположим, что на последнем уровне у нас файл
-            
+        } else{
             current->is_dir = 0;
 
             char *full_path = build_full_path(segments, count);
 
-            if (full_path)
-            {
+            if (full_path){
                 struct stat st;
 
-                if (stat(full_path, &st) == 0)
-                {
-                    if (st.st_mode & S_IXUSR || 
-                        st.st_mode & S_IXGRP || 
-                        st.st_mode & S_IXOTH)
-                    {
+                if (stat(full_path, &st) == 0){
+                    if (st.st_mode & S_IXUSR || st.st_mode & S_IXGRP || st.st_mode & S_IXOTH)
                         current->is_exec = 1;
-                    }
-                }
-                else
-                {
-                    // Попытаемся добавить '/' в начало, если там его нет
-                    if (full_path[0] != '/') 
-                    {
+                } else{
+                    if (full_path[0] != '/'){ // add / to beginning to make absolute path
                         size_t len = strlen(full_path);
-                        char *alt_path = malloc(len + 2); // +1 для '/', +1 для '\0'
-                        if (alt_path)
-                        {
+                        char *alt_path = malloc(len + 2);
+                        if (alt_path){
                             alt_path[0] = '/';
                             strcpy(alt_path + 1, full_path);
 
                             // Пробуем снова stat
-                            if (stat(alt_path, &st) == 0)
-                            {
-                                if ((st.st_mode & S_IXUSR) ||
-                                    (st.st_mode & S_IXGRP) ||
-                                    (st.st_mode & S_IXOTH))
-                                {
+                            if (stat(alt_path, &st) == 0){
+                                if ((st.st_mode & S_IXUSR) || (st.st_mode & S_IXGRP) || (st.st_mode & S_IXOTH))
                                     current->is_exec = 1;
-                                }
-                            }   
-                            else
-                            {
+                            } else
                                 current->is_exec = 0;
-                            }
                             free(alt_path);
                         }
-                    }
-                    else
-                    {
-                        // Если и так уже начиналось с '/', то тут делать нечего
+                    } else
                         current->is_exec = 0;
-                    }
                 }
                 free(full_path);   
             }
         }
-        if (!current) 
-        {
-            // Ошибка - нет памяти, просто прервём
+        if (!current)
             return;
-        }
     }
 }
 
-// Разбиваем строку пути на сегменты (пример: "./test_tree/dir1/file.txt" => ["test_tree","dir1","file.txt"])
-static char** split_path(const char *full_path, size_t *out_count)
-{
-    // Скопируем строку, чтобы strtok её мог резать
+static char** split_path(const char *full_path, size_t *out_count){
     char *temp = strdup(full_path);
-    if (!temp) 
-    {
+    if (!temp){
         *out_count = 0;
         return NULL;
     }
 
-
-
-    // Разделитель в Unix - '/'
-    // Будем резать strtok, собирая сегменты в динамический массив
     size_t capacity = 4;
     size_t count = 0;
     char **parts = malloc(capacity * sizeof(char*));
-    if (!parts) 
-    {
+    if (!parts){
         free(temp);
         *out_count = 0;
         return NULL;
     }
 
     char *tok = strtok(temp, "/");
-    while (tok) 
-    {
-        if (count >= capacity) 
-        {
+    while (tok){
+        if (count >= capacity){
             capacity *= 2;
             char **newparts = realloc(parts, capacity * sizeof(char*));
-            if (!newparts) 
-            {
-                // Ошибка памяти
+            if (!newparts){
                 free(parts);
                 free(temp);
                 *out_count = 0;
@@ -226,132 +153,98 @@ static char** split_path(const char *full_path, size_t *out_count)
         tok = strtok(NULL, "/");
     }
 
-    // Обрежем лишнее
     char **final_arr = realloc(parts, count * sizeof(char*));
-    if (final_arr) 
-    {
+    if (final_arr)
         parts = final_arr;
-    }
     *out_count = count;
-    // temp больше не нужен
     free(temp);
 
     return parts;
 }
 
-// Функция рекурсивного вывода дерева (ASCII-графика)
-static void print_tree_recursive(const TreeNode *node, const char *prefix, int is_last)
-{
-    // Если это «корневой» (пустой) узел, мы его не печатаем
-    if (node->name && node->name[0] != '\0') 
-    {
-        // Определяем, какой использовать символ └── или ├──
-        if (node->is_dir) //каталог - голубой
-        {
+static void print_tree_recursive(const TreeNode *node, const char *prefix, int is_last) {
+    if (node->name && node->name[0] != '\0'){
+        if (node->is_dir) { // blue - dir
             printf("%s%s\x1b[36m%s/\x1b[0m\n",
                     prefix,
                     (is_last ? "└── " : "├── "),
                     node->name
-            );   
-        }
-        else
-        {
-            if (node->is_exec) // исполняемый - красный
-            {
+            );
+        } else{
+            if (node->is_exec){ // red - exec
                 printf("%s%s\x1b[31m%s\x1b[0m\n",
                         prefix,
                         (is_last ? "└── " : "├── "),
                         node->name
                 );
-            }
-            else // белый
-            {
+            } else{ // white - file
                 printf("%s%s%s\n",
                     prefix,
                     (is_last ? "└── " : "├── "),
                     node->name
                 );
             }
-
-
         }
     }
 
-    // Для детей создадим префикс
-    // Если текущий узел не последний, то вместо "   " будет "│  "
-    char new_prefix[1024]; // на моем эеране помещается не более 170 символов в длинну
+    char new_prefix[1024];
     snprintf(new_prefix, sizeof(new_prefix), "%s%s", prefix, (is_last ? "    " : "│   "));
 
-    for (size_t i = 0; i < node->child_count; i++) {
+    for (size_t i = 0; i < node->child_count; i++){
         // Определяем, последний ли это ребёнок
         int child_is_last = ((i + 1) == node->child_count);
         print_tree_recursive(node->children[i], new_prefix, child_is_last);
     }
 }
 
-// Функция рекурсивного освобождения (из рабства)
-static void free_tree(TreeNode *node)
-{
+static void free_tree(TreeNode *node){
     if (!node) return;
-    // Освобождаем детей
-    for (size_t i = 0; i < node->child_count; i++) 
-    {
+    for (size_t i = 0; i < node->child_count; i++)
         free_tree(node->children[i]);
-    }
-    // Освобождаем массив детей
     free(node->children);
-    // Освобождаем имя узла
     free(node->name);
-    // И сам узел
     free(node);
 }
 
-// Собственно print_maches, формирующий дерево и выводящий его
-void print_maches(void)
-{
-    if (global_maches_len == 0) 
-    {
-        printf("Совпадений не найдено.\n");
+void print_matches(void){
+    if (global_matches_len == 0){
+        printf("\n%s\n\tNo files are matching conditions\n%s\n", STRIPE_SMALL, STRIPE_SMALL);
         return;
     }
 
-    // Создаём корневой "пустой" узел, чтобы все пути были его дочерними
     TreeNode *root = create_node("");
-    if (!root) 
-    {
-        fprintf(stderr, "Ошибка: не удалось создать корневой узел.\n");
-        return;
-    }
+    if (!root)
+        print_error_message("Can`t create node");
 
-    // Пройдёмся по всем путям из global_maches и вставим их в дерево
-    for (size_t i = 0; i < global_maches_len; i++) 
-    {
-        // Разбиваем путь на сегменты
+    for (size_t i = 0; i < global_matches_len; i++){
         size_t segment_count = 0;
-        char **segments = split_path(global_maches[i], &segment_count);
-        if (!segments) 
-        {
-            // Ошибка при split_path
+        char **segments = split_path(global_matches[i], &segment_count);
+        if (!segments)
             continue;
-        }
-        // Вставляем в дерево
+
         insert_path_into_tree(root, segments, segment_count);
 
-        // Освободим segments
-        for (size_t j = 0; j < segment_count; j++) 
-        {
+        for (size_t j = 0; j < segment_count; j++)
             free(segments[j]);
-        }
+
         free(segments);
     }
 
-    // Теперь у нас есть дерево. Выводим его рекурсивно
-    
-    for (size_t i = 0; i < root->child_count; i++) {
-        int is_last = ((i + 1) == root->child_count);
-        print_tree_recursive(root->children[i], "", is_last);
+    if (root->child_count == 1
+        && strcmp(root->children[0]->name, ".") == 0){
+
+        TreeNode *dot = root->children[0];
+        printf("./\n");
+        for (size_t i = 0; i < dot->child_count; i++){
+            int is_last = (i + 1 == dot->child_count);
+            print_tree_recursive(dot->children[i], "", is_last);
+        }
+    } else{
+        for (size_t i = 0; i < root->child_count; i++){
+            int is_last = ((i + 1) == root->child_count);
+            print_tree_recursive(root->children[i], "", is_last);
+        }
     }
 
-    // Освобождаем дерево
     free_tree(root);
 }

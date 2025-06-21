@@ -20,48 +20,42 @@ void get_terminal_arguments_from_main_to_functions (int argc, char *argv[], char
     f_argv = argv;
     dir_for_scan = dir_for_scan_path;
     if (DEBUG)
-        printf("\nDebug: get command args to functions file\n");
-
+        printf("\nDEBUG: get command args to functions file\n");
 }
 
 void get_debug_status_mode_functions (bool flag){
-    if(flag){
+    if(flag)
         DEBUG = true;
-    }
 }
 
 
-bool is_directory(const char *path) {
+bool is_directory(const char *path){
     struct stat sb;
 
-    if (stat(path, &sb) != 0) {
+    if (stat(path, &sb) != 0)
         return false;
-    }
 
-    // Проверим, что это именно директория
     return S_ISDIR(sb.st_mode);
 }
 
 
-static int str_in_array(char **arr, size_t len, const char *str){
+static int str_in_array(char **arr, size_t len, const char *str){ // find index of string in massive
     for(size_t i=0;i<len;i++)
         if(strcmp(arr[i], str)==0)
             return (int)i;
     return -1;
 }
 
-static void append_string(char ***arr, size_t *len, const char *s){
+static void append_string(char ***arr, size_t *len, const char *s){ // append path to global valid file massive
     char **tmp = realloc(*arr, (*len + 1) * sizeof(char*));
-    if(!tmp){
-        fprintf(stderr, "\nОшибка: не удалось выделить память\n");
-        exit(EXIT_FAILURE);
-    }
+    if(!tmp)
+        print_error_message("can`t allocate memory");
+
     *arr = tmp;
     (*arr)[*len] = strdup(s);
-    if(!(*arr)[*len]){
-        fprintf(stderr, "\nОшибка: не удалось скопировать сторку\n");
-        exit(EXIT_FAILURE);
-    }
+    if(!(*arr)[*len])
+        print_error_message("can`t copy string (strdup)");
+
     (*len)++;
 }
 
@@ -77,13 +71,11 @@ void apply_logic(const char *dir, bool A, bool N){
         int idx = str_in_array(uniq, uniq_len, global_matches[i]);
         if(idx >= 0){
             counts[idx]++;
-        } else {
+        } else{
             char **utmp = realloc(uniq, (uniq_len+1)*sizeof(char*));
             size_t *ctmp = realloc(counts, (uniq_len+1)*sizeof(size_t));
-            if(!utmp || !ctmp){
-                fprintf(stderr, "\nОшибка: не удалось выделить память\n");
-                exit(EXIT_FAILURE);
-            }
+            if(!utmp || !ctmp)
+                print_error_message("can`t reallocate memory");
             uniq = utmp;
             counts = ctmp;
             uniq[uniq_len] = global_matches[i];
@@ -99,7 +91,7 @@ void apply_logic(const char *dir, bool A, bool N){
         for(size_t i=0;i<uniq_len;i++)
             if(counts[i] == plugins_used)
                 append_string(&result, &result_len, uniq[i]);
-    } else {
+    } else{
         for(size_t i=0;i<uniq_len;i++)
             append_string(&result, &result_len, uniq[i]);
     }
@@ -185,8 +177,6 @@ void print_standart_message(char flag){
         case 'v':
             printf("\n%s\nCreated by: %s\nGroup: %s\nVariant: %s\n%s\n",
                              STRIPE,         NAME,      GR,          VR, STRIPE);
-
-
             break;
         default:
 
@@ -196,33 +186,26 @@ void print_standart_message(char flag){
 
 }
 
-
-
-bool is_it_so_lib(const char *path) {
-    // 1) Найдём имя файла (после последнего '/' )
+bool is_it_so_lib(const char *path){ // check *lib.so mask match filename
     const char *name = strrchr(path, '/');
-    if (name) name++;  // если нашли '/', переходим за него
+    if (name) name++;
     else      name = path;
 
-    // 2) Проверим длину: она должна быть >= strlen("lib") + strlen(".so")
     size_t len = strlen(name);
-    if (len < 3 + 3)  // 3 символа в "lib" + 3 в ".so"
+    if (len < 3 + 3)
         return false;
 
-    // 3) Проверим префикс "lib"
     if (name[0] != 'l' || name[1] != 'i' || name[2] != 'b')
         return false;
 
-    // 4) Проверим суффикс ".so"
     if (name[len-3] != '.' || name[len-2] != 's' || name[len-1] != 'o')
         return false;
 
-    // Всё ок
     return true;
 }
 
 int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib(const char *fpath, const struct stat *sb, int typeflag){
-    switch (typeflag) {
+    switch (typeflag){
         case FTW_D:
             return 0;
         case FTW_F:
@@ -236,14 +219,14 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
             dlerror();
             void *dl = dlopen(lib_name, RTLD_LAZY);
 
-            if (!dl) {
+            if (!dl){
                 fprintf(stderr, "ERROR: dlopen() in %s failed: %s\n", lib_name, dlerror());
                 goto END;
             }
 
             void *func = dlsym(dl, "plugin_get_info");
 
-            if (!func) {
+            if (!func){
                 fprintf(stderr, "ERROR: dlsym() for %s failed: %s\n", lib_name, dlerror());
                 goto END;
             }
@@ -252,7 +235,7 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
             pgi_func_t pgi_func = (pgi_func_t)func;
 
             int ret = pgi_func(&pi);
-            if (ret < 0) {
+            if (ret < 0){
                 fprintf(stderr, "ERROR: plugin_get_info()  for %s failed\n", lib_name);
                 goto END;
             }
@@ -262,21 +245,18 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
             printf("Plugin purpose:\t\t%s\n", pi.plugin_purpose);
             printf("Plugin author:\t\t%s\n", pi.plugin_author);
             printf("Supported options: ");
-            if (pi.sup_opts_len > 0) {
+            if (pi.sup_opts_len > 0){
                 printf("\n");
-                for (size_t i = 0; i < pi.sup_opts_len; i++) {
+                for (size_t i = 0; i < pi.sup_opts_len; i++){
                     printf("\t--%s\t\t%s\n", pi.sup_opts[i].opt.name, pi.sup_opts[i].opt_descr);
                 }
-            }
-            else {
+            } else{
                 printf("none (!?)\n");
             }
-            if (pi.sup_opts_len == 0) {
+            if (pi.sup_opts_len == 0)
                 print_error_message("library supports no options! How so?");
-                goto END;
-            }
-            printf("\n%s\n", STRIPE);
 
+            printf("\n%s\n", STRIPE_SMALL);
 
             END:
             if (lib_name) free(lib_name);
@@ -288,7 +268,7 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
 }
 
 int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct stat *sb, int typeflag){
-    switch (typeflag) {
+    switch (typeflag){
         case FTW_D:
             return 0;
         case FTW_F:
@@ -306,14 +286,14 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
             dlerror();
             void *dl = dlopen(lib_name, RTLD_LAZY);
 
-            if (!dl) {
+            if (!dl){
                 fprintf(stderr, "ERROR: dlopen() in %s failed: %s\n", lib_name, dlerror());
                 goto END;
             }
 
             void *func = dlsym(dl, "plugin_get_info");
 
-            if (!func) {
+            if (!func){
                 fprintf(stderr, "ERROR: dlsym() for %s failed: %s\n", lib_name, dlerror());
                 goto END;
             }
@@ -322,70 +302,56 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
             pgi_func_t pgi_func = (pgi_func_t)func;
 
             int ret = pgi_func(&pi);
-            if (ret < 0) {
+            if (ret < 0){
                 fprintf(stderr, "ERROR: plugin_get_info()  for %s failed\n", lib_name);
                 goto END;
             }
 
-            if (pi.sup_opts_len == 0) {
+            if (pi.sup_opts_len == 0)
                 print_error_message("library supports no options! How so?");
-                goto END;
-            }
 
-            if (DEBUG){
+            if (DEBUG)
                 printf("\nDEBUG: successfully added plugin %s\n", lib_name);
-            }
 
             func = dlsym(dl, "plugin_process_file");
-            if (!func) {
-                fprintf(stderr, "ERROR: no plugin_process_file() function found\n");
-                goto END;
-            }
+            if (!func)
+                print_error_message("no plugin_process_file() function found");
 
             typedef int (*ppf_func_t)(const char*, struct option*, size_t);
             ppf_func_t ppf_func = (ppf_func_t)func;
 
             longopts = calloc(pi.sup_opts_len + 1, sizeof(struct option));
-            if (!longopts) {
-                print_error_message("calloc() failed\nn");
-                goto END;
-            }
+            if (!longopts)
+                print_error_message("can`t allocate memory");
 
-            for (size_t i = 0; i < pi.sup_opts_len; i++) {
+            for (size_t i = 0; i < pi.sup_opts_len; i++)
                 memcpy(longopts + i, &pi.sup_opts[i].opt, sizeof(struct option));
-            }
 
             opts_to_pass = calloc(pi.sup_opts_len, sizeof(struct option));
-            if (!opts_to_pass) {
-                print_error_message("calloc() failed\nn");
-                goto END;
-            }
+            if (!opts_to_pass)
+                print_error_message("can`t allocate memory");
 
 
-            if (DEBUG){
-                for (size_t i = 0; i < pi.sup_opts_len; i++) {
+            if (DEBUG)
+                for (size_t i = 0; i < pi.sup_opts_len; i++)
                     fprintf(stderr, "DEBUG: to getopt(): passing option '%s'\n",
-                            (longopts + i)->name);
-                }
-            }
+                                                                        (longopts + i)->name);
 
             char **argv_copy = calloc(f_argc + 1, sizeof(char*));
-            if(!argv_copy){
-                print_error_message("calloc() failed\nn");
-                goto END;
-            }
+            if(!argv_copy)
+                print_error_message("can`t allocate memory");
+
             memcpy(argv_copy, f_argv, f_argc * sizeof(char*));
 
             optind = 1;
             int saved_opterr = opterr;
             opterr = 0;
-            while (1) {
+            while (1){
                 int opt_ind = 0;
                 if(DEBUG){
-                    printf("\nDebug: f_argc = %d", f_argc);
-                    for (int i = 0; i < f_argc; i++){
+                    printf("\nDEBUG: f_argc = %d", f_argc);
+                    for (int i = 0; i < f_argc; i++)
                         printf("\t f_argv[%d] = %s\n", i, argv_copy[i]);
-                    }
                 }
 
                 int option_start = optind;
@@ -395,14 +361,12 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                 if (ret == '?')
                     continue;
 
-                if (ret != 0) {
-                    fprintf(stderr, "ERROR: failed to parse options\n");
-                    goto END;
-                }
+                if (ret != 0)
+                    print_error_message("failed to parse options");
 
                 #ifndef ALLOW_OPT_ABBREV
                 const char *typed = argv_copy[option_start];
-                if (typed && strncmp(typed, "--", 2) == 0) {
+                if (typed && strncmp(typed, "--", 2) == 0){
                     typed += 2;
                     size_t typed_len = strcspn(typed, "=");
                     if (strncmp(typed, (longopts + opt_ind)->name, typed_len) != 0 ||
@@ -415,15 +379,13 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                 #endif
 
                 // Check how many options we got up to this moment
-                if ((size_t)opts_to_pass_len == pi.sup_opts_len) {
-                    fprintf(stderr, "ERROR: too many options!\n");
-                    goto END;
-                }
+                if ((size_t)opts_to_pass_len == pi.sup_opts_len)
+                    print_error_message("too many options!");
 
                 // Add this option to array of options actually passed to plugin_process_file()
                 memcpy(opts_to_pass + opts_to_pass_len, longopts + opt_ind, sizeof(struct option));
                 // Argument (if any) is passed in flag
-                if ((longopts + opt_ind)->has_arg) {
+                if ((longopts + opt_ind)->has_arg){
                     // Mind this!
                     // flag is of type int*, but we are passing char* here (it's ok to do so).
                     (opts_to_pass + opts_to_pass_len)->flag = (int*)strdup(optarg);
@@ -451,12 +413,11 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
 
             ftsp = fts_open(path_t, FTS_NOCHDIR | FTS_PHYSICAL, NULL);
 
-            if (!ftsp) {
-                print_error_message("fts_open");
-            }
+            if (!ftsp)
+                print_error_message("fts cant open directory");
 
-            while ((entry = fts_read(ftsp)) != NULL) {
-                if (entry->fts_info == FTS_F) {
+            while ((entry = fts_read(ftsp)) != NULL){
+                if (entry->fts_info == FTS_F){
                     errno = 0;
                     ret = ppf_func(entry->fts_path, opts_to_pass, opts_to_pass_len);
                     if (ret < 0)
@@ -465,10 +426,9 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                     if (ret > 0)
                         continue;
 
-                    if (ret == 0) {
+                    if (ret == 0)
                         append_string(&global_matches, &global_matches_len,
                                       entry->fts_path);
-                    }
                 }
             }
 
@@ -476,8 +436,6 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                 fts_close(ftsp);
 
             plugins_used++;
-
-
 
             END:
             if (opts_to_pass) {

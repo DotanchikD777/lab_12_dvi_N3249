@@ -25,20 +25,18 @@
 #define V_USED 5
 
 #define STRIPE "<=================================================================================================>"
-#define STRIPE_SMALL "<--------------------------------------------------------------------------------------------->"
+#define STRIPE_SMALL "<------------------------------------------------------------------------------------------------->"
 #define NAME "Denis Ilchuk Vitalevich"
 #define VR "13"
 #define GR "N3249"
-#define PROGNAME "lab11dviN3249"
-#define VERSION "0.5"
+
 
 //Globals
 
-extern int opt_used_counter[6];
-
-extern char **global_matches;
-extern size_t global_matches_len;
-extern size_t plugins_used;
+extern int      opt_used_counter[6];
+extern char     **global_matches;
+extern size_t   global_matches_len;
+extern size_t   plugins_used;
 //Functions
 
 void opt_errors(void);
@@ -67,7 +65,7 @@ bool is_it_so_lib(const char *path);
 
 char* get_p_dir(int argc, char **argv);
 
-void print_maches(void);
+void print_matches(void);
 
 void apply_logic(const char *dir, bool A, bool N);
 #endif
