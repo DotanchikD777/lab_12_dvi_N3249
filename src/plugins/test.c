@@ -45,8 +45,6 @@ int plugin_get_info(struct plugin_info* ppi) {
 }
 
 int plugin_process_file(const char *fname, struct option in_opts[], size_t in_opts_len) {
-    bool DEBUG = getenv("LAB12DEBUG") != NULL;
-
     if(!fname || !in_opts || in_opts_len == 0){
         errno = EINVAL;
         return -1;
