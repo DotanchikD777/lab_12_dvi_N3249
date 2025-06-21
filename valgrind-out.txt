@@ -1,8 +1,0 @@
-
-==48133== HEAP SUMMARY:
-==48133==     in use at exit: 0 bytes in 0 blocks
-==48133==   total heap usage: 192 allocs, 192 frees, 248,788 bytes allocated
-==48133== 
-==48133== All heap blocks were freed -- no leaks are possible
-==48133== 
-==48133== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
