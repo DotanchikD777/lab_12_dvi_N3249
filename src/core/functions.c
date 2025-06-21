@@ -65,7 +65,7 @@ static void append_string(char ***arr, size_t *len, const char *s){
     (*len)++;
 }
 
-void apply_logic(const char *dir, bool A, bool O, bool N){
+void apply_logic(const char *dir, bool A, bool N){
     if(global_maches_len == 0)
         return;
 
@@ -225,7 +225,6 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
     switch (typeflag) {
         case FTW_D:
             return 0;
-            break;
         case FTW_F:
             if (!is_it_so_lib(fpath))
                 return 0;
@@ -283,10 +282,8 @@ int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic
             if (lib_name) free(lib_name);
             if (dl) dlclose(dl);
             return 0;
-            break;
         default:
             return 0;
-            break;
     }
 }
 
@@ -294,7 +291,6 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
     switch (typeflag) {
         case FTW_D:
             return 0;
-            break;
         case FTW_F:
             if (!is_it_so_lib(fpath))
                 return 0;
@@ -489,19 +485,16 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                     free( (opts_to_pass + i)->flag );
                 free(opts_to_pass);
             }
-            if(argv_copy)
-                free(argv_copy);
+
+            free(argv_copy);
             if (longopts) free(longopts);
             if (lib_name) free(lib_name);
             //if (file_name) free(file_name);
             if (dl) dlclose(dl);
 
             return 0;
-            break;
-
         default:
             return 0;
-            break;
     }
 }
 

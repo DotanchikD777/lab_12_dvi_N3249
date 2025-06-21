@@ -140,7 +140,7 @@ int main(int argc, char *argv[]){
         if (ftw(P_dir, scan_dir_via_dynamic_lib_or_libs_for_matches, 10) == -1)
             print_error_message("ftw");
 
-        apply_logic(dir_to_scan, A_flag, O_flag, N_flag);
+        apply_logic(dir_to_scan, A_flag, N_flag);
 
 
         print_maches();

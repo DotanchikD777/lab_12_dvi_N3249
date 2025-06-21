@@ -50,8 +50,6 @@ void punish_dummy_user(const char *err_msg);
 
 void print_error_message(const char *err_msg);
 
-int yes_or_no(const char *input);
-
 int scan_dir_for_dynamic_lib_options_if_user_provide_no_dir_for_scan_via_dynamic_lib(const char *fpath, const struct stat *sb, int typeflag);
 
 void get_terminal_arguments_from_main_to_functions (int argc, char *argv[], char *dir_with_libs);
@@ -66,9 +64,9 @@ struct option* get_all_options(char *plugin_dir_path, size_t *count);
 
 bool is_it_so_lib(const char *path);
 
-char * get_p_dir(int argc, char **argv);
+char* get_p_dir(int argc, char **argv);
 
 void print_maches(void);
 
-void apply_logic(const char *dir, bool A, bool O, bool N);
+void apply_logic(const char *dir, bool A, bool N);
 #endif
