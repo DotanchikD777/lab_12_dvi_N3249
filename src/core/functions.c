@@ -66,15 +66,15 @@ static void append_string(char ***arr, size_t *len, const char *s){
 }
 
 void apply_logic(const char *dir, bool A, bool N){
-    if(global_maches_len == 0)
+    if(global_matches_len == 0)
         return;
 
     /* gather unique paths and count occurrences */
     char **uniq = NULL;
     size_t *counts = NULL;
     size_t uniq_len = 0;
-    for(size_t i=0;i<global_maches_len;i++){
-        int idx = str_in_array(uniq, uniq_len, global_maches[i]);
+    for(size_t i=0; i < global_matches_len; i++){
+        int idx = str_in_array(uniq, uniq_len, global_matches[i]);
         if(idx >= 0){
             counts[idx]++;
         } else {
@@ -86,7 +86,7 @@ void apply_logic(const char *dir, bool A, bool N){
             }
             uniq = utmp;
             counts = ctmp;
-            uniq[uniq_len] = global_maches[i];
+            uniq[uniq_len] = global_matches[i];
             counts[uniq_len] = 1;
             uniq_len++;
         }
@@ -128,11 +128,11 @@ void apply_logic(const char *dir, bool A, bool N){
     }
 
     /* free old matches */
-    for(size_t i=0;i<global_maches_len;i++)
-        free(global_maches[i]);
-    free(global_maches);
-    global_maches = result;
-    global_maches_len = result_len;
+    for(size_t i=0; i < global_matches_len; i++)
+        free(global_matches[i]);
+    free(global_matches);
+    global_matches = result;
+    global_matches_len = result_len;
     free(uniq);
     free(counts);
 }
@@ -466,7 +466,7 @@ int scan_dir_via_dynamic_lib_or_libs_for_matches(const char *fpath, const struct
                         continue;
 
                     if (ret == 0) {
-                        append_string(&global_maches, &global_maches_len,
+                        append_string(&global_matches, &global_matches_len,
                                       entry->fts_path);
                     }
                 }

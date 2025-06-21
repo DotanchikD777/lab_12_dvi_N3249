@@ -24,7 +24,8 @@
 #define H_USED 4
 #define V_USED 5
 
-#define STRIPE "<==========================================================================================>"
+#define STRIPE "<=================================================================================================>"
+#define STRIPE_SMALL "<--------------------------------------------------------------------------------------------->"
 #define NAME "Denis Ilchuk Vitalevich"
 #define VR "13"
 #define GR "N3249"
@@ -35,8 +36,8 @@
 
 extern int opt_used_counter[6];
 
-extern char **global_maches;
-extern size_t global_maches_len;
+extern char **global_matches;
+extern size_t global_matches_len;
 extern size_t plugins_used;
 //Functions
 
