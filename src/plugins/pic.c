@@ -74,8 +74,7 @@ int *parse_extensions(const char *str) { // check argument for errors
 }
 
 
-int
-plugin_get_info(struct plugin_info *ppi) {
+int plugin_get_info(struct plugin_info *ppi) {
     if (!ppi) {
         fprintf(stderr, "ERROR: in plugin %s: invalid argument\n", d_lib_name);
         return -1;
